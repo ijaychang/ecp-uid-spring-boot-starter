@@ -124,6 +124,8 @@ public class CachedUidGeneratorTest {
         Assert.assertTrue(uid > 0L);
         Assert.assertTrue(!StringUtils.isEmpty(parsedInfo));
 
+        //System.out.println(uid);
+
         if (VERBOSE) {
             System.out.println(Thread.currentThread().getName() + " No." + index + " >>> " + parsedInfo);
         }

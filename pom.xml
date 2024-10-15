@@ -3,196 +3,122 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <name>ecp-uid</name>
-	<groupId>com.myzmds.ecp</groupId>
-    <artifactId>ecp-uid</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<groupId>cn.jaychang</groupId>
+    <artifactId>ecp-uid-spring-boot-starter</artifactId>
+	<version>1.0.0</version>
     <packaging>jar</packaging>
 
-	<developers>
-		<developer>
-			<id>linhch</id>
-			<name>庄梦蝶殇</name>
-			<email>linhuaichuan1989@126.com</email>
-			<url>http://myzmds.com/</url>
-		</developer>
-	</developers>
+	<name>Ecp Uid Spring Boot Starter</name>
+	<description>Ecp Uid Spring Boot Starter</description>
 
 	<properties>
-		<!-- 项目编码 -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<!-- jdk版本 -->
 		<java.version>1.8</java.version>
-		
-		<commons-lang3.version>3.5</commons-lang3.version>
-		<org.springframework.version>5.2.15.RELEASE</org.springframework.version>
-		<org.springframework.data.version>2.3.9.RELEASE</org.springframework.data.version>
-		
+		<spring-boot.version>2.3.12.RELEASE</spring-boot.version>
+		<fastjson.version>1.2.83</fastjson.version>
 		<mysql.version>5.1.49</mysql.version>
-		<slf4j.version>1.7.26</slf4j.version>
-		<zookeeper.version>3.4.14</zookeeper.version>
+		<zk.version>3.5.10</zk.version>
+		<groboutils-core.version>5</groboutils-core.version>
 
-		<lombok.version>1.18.4</lombok.version>
-		<junit.version>4.13.2</junit.version>
+		<!-- Maven plugins -->
+		<maven.compiler.version>3.8.1</maven.compiler.version>
+		<maven.source.version>3.2.1</maven.source.version>
+		<maven.javadoc.version>2.9.1</maven.javadoc.version>
+		<maven.deploy.version>3.1.2</maven.deploy.version>
+		<maven.gpg.version>1.6</maven.gpg.version>
+		<maven.coveralls.version>4.3.0</maven.coveralls.version>
+		<maven.central.publishing.version>0.4.0</maven.central.publishing.version>
 	</properties>
 
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<resources>
-			<!--打包资源文件 -->
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>**</include>
-				</includes>
-			</resource>
-		</resources>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-				<includes>
-					<include>**</include>
-				</includes>
-			</testResource>
-		</testResources>
-		<pluginManagement>
-			<plugins>
-				<!-- 编译插件 -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.0</version>
-					<configuration>
-						<source>${java.version}</source>
-						<target>${java.version}</target>
-						<encoding>UTF-8</encoding>
-					</configuration>
-				</plugin>
-				<!-- 资源插件 -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.1.0</version>
-					<configuration>
-						<encoding>UTF-8</encoding>
-						<!-- 过滤后缀为pem、pfx的证书文件 -->
-						<nonFilteredFileExtensions>
-							<nonFilteredFileExtension>pem</nonFilteredFileExtension>
-							<nonFilteredFileExtension>jks</nonFilteredFileExtension>
-							<nonFilteredFileExtension>pfx</nonFilteredFileExtension>
-						</nonFilteredFileExtensions>
-					</configuration>
-				</plugin>
-				<!-- jar插件 -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.1.0</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-    
-    <!-- 覆盖super pom中central的设置，允许下载snapshot的构件 -->
-	<repositories>
-		<repository>
-			<id>central</id>
-			<url>http://repo1.maven.org/maven2</url>
-			<snapshots>
-				<!-- (可解决parent 版本为snapshot，子项目无法独立打包问题) -->
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>osgeo</id>
-			<name>Open Source Geospatial Foundation Repository</name>
-			<url>http://download.osgeo.org/webdav/geotools/</url>
-		</repository>
-	</repositories>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version2.0</name>
+			<url>http://www.apache.org/licenses/</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/jaychang9/ecp-uid-spring-boot-starter</url>
+		<connection>scm:git:git://github.com/jaychang9/ecp-uid-spring-boot-starter.git</connection>
+		<developerConnection>scm:git:git@github.com:jaychang9/ecp-uid-spring-boot-starter.git</developerConnection>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub Issue Management</system>
+		<url>https://github.com/jaychang9/ecp-uid-spring-boot-starter/issues</url>
+	</issueManagement>
+
+	<developers>
+		<developer>
+			<id>jaychang</id>
+			<name>Jay Chang</name>
+			<email>jaychang1987@gmail.com</email>
+			<url>https://jaychang.cn/</url>
+			<timezone>+8</timezone>
+		</developer>
+	</developers>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<!-- Import dependency management from Spring Boot -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
     <dependencies>
         <!-- Spring -->
-        <dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${org.springframework.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${org.springframework.version}</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 		<!-- 代码直接调用commons-logging会被桥接到slf4j(spring依赖) -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
-        
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
-        <!-- DB -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-			<version>${org.springframework.version}</version>
-            <optional>true</optional>
-        </dependency>
+
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-			<version>${org.springframework.version}</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
 			<optional>true</optional>
 		</dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.version}</version>
             <optional>true</optional>
         </dependency>
         
-        <!-- zookeeper -->
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
-			<version>${zookeeper.version}</version>
+			<version>${zk.version}</version>
             <optional>true</optional>
 			<exclusions>
 				<exclusion>
@@ -210,11 +136,9 @@
 			</exclusions>
 		</dependency>
 
-		<!-- spring-redis -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
-			<version>${org.springframework.data.version}</version>
 			<optional>true</optional>
 		</dependency>
         
@@ -222,28 +146,100 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
 			<optional>true</optional>
-			<version>1.2.58</version>
+			<version>${fastjson.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- junit 多线程测试 -->
+		<!-- Junit 多线程测试 -->
 		<dependency>
 			<groupId>net.sourceforge.groboutils</groupId>
 			<artifactId>groboutils-core</artifactId>
-			<version>5</version>
+			<version>${groboutils-core.version}</version>
 			<scope>test</scope>
-		</dependency> 
+		</dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-			<version>${org.springframework.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<url>https://central.sonatype.com/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${file.encoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${maven.source.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven.javadoc.version}</version>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>${maven.gpg.version}</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>${maven.central.publishing.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<tokenAuth>true</tokenAuth>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

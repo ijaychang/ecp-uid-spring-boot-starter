@@ -44,7 +44,7 @@ public class TwitterSnowflakeStrategy implements IUidStrategy {
     
     @Override
     public UidModel getName() {
-        return UidModel.snowflake;
+        return UidModel.SNOWFLAKE;
     }
     
     @Override

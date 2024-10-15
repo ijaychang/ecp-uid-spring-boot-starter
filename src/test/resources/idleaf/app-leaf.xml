@@ -32,7 +32,7 @@
 		<!-- <property name="timeout" value="30"/> -->
 	</bean>
 
-	<bean id="segmentService" class="SegmentServiceImpl">
+	<bean id="segmentService" class="cn.jaychang.ecp.uid.leaf.SegmentServiceImpl">
 		<constructor-arg name="jdbcTemplate" ref="jdbcTemplate" />
 		<constructor-arg name="bizTag" value="order" />
 		<property name="asynLoadingSegment" value="true" />

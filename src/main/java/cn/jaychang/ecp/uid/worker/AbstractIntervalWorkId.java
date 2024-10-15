@@ -36,7 +36,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     /**
      * 线程名-心跳
      */
-    public static final String THREAD_HEARTBEAT_NAME = "zk_heartbeat";
+    public static final String THREAD_HEARTBEAT_NAME = "ecp_uid_heartbeat";
     
     /**
      * 心跳原子标识

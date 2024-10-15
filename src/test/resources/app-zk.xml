@@ -16,7 +16,7 @@
 	</bean>
 	
 	<!-- redis
-	<bean class="com.myzmds.ecp.core.uid.RedisConfig" />
+	<bean class="cn.jaychang.ecp.uid.RedisConfig" />
 	<bean class="RedisWorkIdAssigner" >
 		<property name="interval" value="3000" />
 		<property name="pidHome" value="F:\dump" />

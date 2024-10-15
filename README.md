@@ -24,17 +24,19 @@
      		 
      (1)、workerId提供策略
          * DisposableWorkerIdAssigner，利用数据库来管理生成workId，依赖数据库和spring-jdbc框架(需有jdbcTemplate的bean)。mysql表示例：
-		DROP TABLE IF EXISTS WORKER_NODE;
-		CREATE TABLE WORKER_NODE (
-			ID BIGINT NOT NULL AUTO_INCREMENT COMMENT '自增 id',
-			HOST_NAME VARCHAR(64) NOT NULL COMMENT '主机名',
-			PORT VARCHAR(64) NOT NULL COMMENT '端口',
-			TYPE INT NOT NULL COMMENT '节点类型: ACTUAL or CONTAINER',
-			LAUNCH_DATE DATE NOT NULL COMMENT '启动时间',
-			MODIFIED TIMESTAMP NOT NULL COMMENT '修改时间',
-			CREATED TIMESTAMP NOT NULL COMMENT '创建时间',
-			PRIMARY KEY(ID)
-		) COMMENT='DB WorkerID Assigner for UID Generator',ENGINE = INNODB;
+        DROP TABLE IF EXISTS WORKER_NODE;
+        CREATE TABLE WORKER_NODE
+        (
+        ID BIGINT NOT NULL AUTO_INCREMENT COMMENT 'auto increment id',
+        HOST_NAME VARCHAR(64) NOT NULL COMMENT 'host name',
+        `PORT` VARCHAR(64) NOT NULL COMMENT 'port',
+        `TYPE` INT NOT NULL COMMENT 'node type: ACTUAL or CONTAINER',
+        `LAUNCH_DATE` DATE NOT NULL COMMENT 'launch date',
+        `MODIFIED` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'modified time',
+        `CREATED` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
+        PRIMARY KEY(ID)
+        )
+        COMMENT='DB WorkerID Assigner for UID Generator',ENGINE = INNODB;
 		 
 		示例：
 		<bean id="disposableWorker" class="**.DisposableWorkerIdAssigner"/>

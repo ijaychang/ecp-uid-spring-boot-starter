@@ -4,9 +4,9 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- UID generator -->
-	<bean id="disposableWorkerIdAssigner" class="DisposableWorkerIdAssigner" />
+	<bean id="disposableWorkerIdAssigner" class="cn.jaychang.ecp.uid.worker.DisposableWorkerIdAssigner" />
 
-	<bean id="cachedUidGenerator" class="CachedUidGenerator">
+	<bean id="cachedUidGenerator" class="cn.jaychang.ecp.uid.baidu.impl.CachedUidGenerator">
 		<property name="workerIdAssigner" ref="disposableWorkerIdAssigner" />
 
 		<!-- 以下为可选配置, 如未指定将采用默认值 -->

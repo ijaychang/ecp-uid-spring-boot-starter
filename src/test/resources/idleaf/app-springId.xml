@@ -31,7 +31,7 @@
 		<property name="propagationBehaviorName" value="PROPAGATION_REQUIRED" />
 	</bean>
 	
-	<bean id="columnMaxValueIncrementer" abstract="true" class="ColumnMaxValueIncrementer">
+	<bean id="columnMaxValueIncrementer" abstract="true" class="cn.jaychang.ecp.uid.spring.ColumnMaxValueIncrementer">
 		<constructor-arg name="jdbcTemplate" ref="jdbcTemplate" />
 		<property name="paddingLength" value="6"></property>
 	</bean>

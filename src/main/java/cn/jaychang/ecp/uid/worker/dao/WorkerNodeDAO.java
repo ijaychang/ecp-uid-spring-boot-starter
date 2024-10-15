@@ -43,7 +43,7 @@ public class WorkerNodeDAO {
      */
     public WorkerNode getWorkerNodeByHostPort(String host, String port) {
         final WorkerNode workerNode = new WorkerNode();
-        String querySql = "select * from WORKER_NODE where HOST_NAME = ? AND PORT = ? ";
+        String querySql = "SELECT * FROM WORKER_NODE where HOST_NAME = ? AND PORT = ? ";
         this.jdbcTemplate.query(querySql, new String[] {host, port}, new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet rs)

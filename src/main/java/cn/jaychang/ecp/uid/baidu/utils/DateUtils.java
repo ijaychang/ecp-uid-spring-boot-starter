@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2017 Baidu, Inc. All Rights Reserve.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package cn.jaychang.ecp.uid.baidu.utils;
 
 import java.text.DateFormat;
@@ -8,38 +23,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @������ DateUtils.java
- * @������ <pre>��ʱ�丨����(SimpleDateFormat���̲߳���ȫ�ģ�������˾�̬������)</pre>
- * @����  ׯ�ε��� linhuaichuan1989@126.com
- * @����ʱ�� 2019��7��8�� ����11:15:29
- * @�汾 1.0.0
+ * @类名称 DateUtils.java
+ * @类描述 <pre>简单时间辅助类(SimpleDateFormat是线程不安全的，因此做了静态锁处理)</pre>
+ * @作者  庄梦蝶殇 linhuaichuan1989@126.com
+ * @创建时间 2019年7月8日 上午11:15:29
+ * @版本 1.0.0
  *
- * @�޸ļ�¼
+ * @修改记录
  * <pre>
- *     �汾                       �޸��� 		�޸����� 		 �޸���������
+ *     版本                       修改人 		修改日期 		 修改内容描述
  *     ----------------------------------------------
- *     1.0.0 	ׯ�ε��� 	2019��7��8��             
+ *     1.0.0 	庄梦蝶殇 	2019年7月8日             
  *     ----------------------------------------------
  * </pre>
  */
 public class DateUtils {
     /**
-     * ����-��ʽ
+     * 日期-格式
      */
     public static final String DAY_PATTERN = "yyyy-MM-dd";
-    
+
     /**
-     * ����ʱ��-��ʽ
+     * 日期时间-格式
      */
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    
+
     /**
-     * ����ʱ��(������)-��ʽ
+     * 日期时间(带毫秒)-格式
      */
     public static final String DATETIME_MS_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
-    
+
     /**
-     * ������df����
+     * 加锁的df集合
      */
     private static ThreadLocal<Map<String, DateFormat>> dfMap = new ThreadLocal<Map<String, DateFormat>>() {
         @Override
@@ -47,12 +62,12 @@ public class DateUtils {
             return new HashMap<String, DateFormat>(10);
         }
     };
-    
+
     /**
-     * @�������� getDateFormat
-     * @�������� <pre>����һ��DateFormat,ÿ���߳�ֻ��newһ��pattern��Ӧ��sdf</pre>
-     * @param pattern ��ʽ ���ʽ
-     * @return DateFormat����
+     * @方法名称 getDateFormat
+     * @功能描述 <pre>返回一个DateFormat,每个线程只会new一次pattern对应的sdf</pre>
+     * @param pattern 格式 表达式
+     * @return DateFormat对象
      */
     private static DateFormat getDateFormat(final String pattern) {
         Map<String, DateFormat> tl = dfMap.get();
@@ -63,33 +78,33 @@ public class DateUtils {
         }
         return df;
     }
-    
+
     /**
-     * @�������� formatByDateTimePattern
-     * @�������� <pre>��ȡ'yyyy-MM-dd HH:mm:ss'��ʽ��ʱ���ַ���</pre>
-     * @param date ʱ�����
-     * @return ʱ���ַ���
+     * @方法名称 formatByDateTimePattern
+     * @功能描述 <pre>获取'yyyy-MM-dd HH:mm:ss'格式的时间字符串</pre>
+     * @param date 时间对象
+     * @return 时间字符串
      */
     public static String formatByDateTimePattern(Date date) {
         return getDateFormat(DATETIME_PATTERN).format(date);
     }
-    
+
     /**
-     * @�������� parseByDayPattern
-     * @�������� <pre>����'yyyy-MM-dd'��ʽ��ʱ��</pre>
-     * @param str ʱ���ַ���
-     * @return ʱ�����
+     * @方法名称 parseByDayPattern
+     * @功能描述 <pre>解析'yyyy-MM-dd'格式的时间</pre>
+     * @param str 时间字符串
+     * @return 时间对象
      */
     public static Date parseByDayPattern(String str) {
         return parseDate(str, DAY_PATTERN);
     }
-    
+
     /**
-     * @�������� parseDate
-     * @�������� <pre>����ָ����ʽ��ʱ��</pre>
-     * @param str ʱ���ַ���
-     * @param pattern ��ʽ���ʽ
-     * @return ʱ�����
+     * @方法名称 parseDate
+     * @功能描述 <pre>解析指定格式的时间</pre>
+     * @param str 时间字符串
+     * @param pattern 格式表达式
+     * @return 时间对象
      */
     public static Date parseDate(String str, String pattern) {
         try {

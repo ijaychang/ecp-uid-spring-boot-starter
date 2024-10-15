@@ -48,7 +48,7 @@ public class SegmentServiceImplTest extends Thread {
         for (int i = 0; i < runnerCount; i++) {
             trs[i] = runner;
         }
-        
+
         MultiThreadedTestRunner mttr = new MultiThreadedTestRunner(trs);
         try {
             mttr.runTestRunnables();
