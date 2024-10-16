@@ -30,10 +30,10 @@ import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
  *
  * @author yutianbao
  */
-@AllArgsConstructor
 public class WorkerNodeDAO {
-    
-    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     
     /**
      * Get {@link WorkerNode} by node host

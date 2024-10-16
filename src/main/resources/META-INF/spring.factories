@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-cn.jaychang.ecp.uid.config.properties.EcpUidAutoConfiguration
+cn.jaychang.ecp.uid.config.EcpUidAutoConfiguration

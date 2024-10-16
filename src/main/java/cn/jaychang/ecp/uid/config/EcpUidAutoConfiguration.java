@@ -17,11 +17,10 @@ import cn.jaychang.ecp.uid.worker.enums.WorkerIdAssignerEnum;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Objects;
 
@@ -32,12 +31,6 @@ import java.util.Objects;
 public class EcpUidAutoConfiguration {
     @Autowired
     private EcpUidProperties ecpUidProperties;
-
-    @Autowired(required = false)
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired(required = false)
-    private RedisTemplate<String, Object> redisTemplate;
 
     @Bean
     public UidContext uidContext() {
@@ -58,14 +51,15 @@ public class EcpUidAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy}'.equals('step')}")
     public SpringStepStrategy springStepStrategy() {
         SpringStepStrategy springStepStrategy = new SpringStepStrategy();
-        springStepStrategy.setJdbcTemplate(jdbcTemplate);
         springStepStrategy.setAsynLoadingSegment(ecpUidProperties.getSpringStep().getAsynLoadingSegment());
         return springStepStrategy;
     }
 
     @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy}'.equals('snowflake')}")
     public TwitterSnowflakeStrategy twitterSnowflakeStrategy() {
         TwitterSnowflakeStrategy twitterSnowflakeStrategy = new TwitterSnowflakeStrategy();
         TwitterSnowflakeProperties twitterSnowflakeProperties = ecpUidProperties.getTwitterSnowflake();
@@ -78,6 +72,7 @@ public class EcpUidAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy}'.equals('segment')}")
     public MeituanLeafSegmentStrategy meituanLeafSegmentStrategy() {
         MeituanLeafSegmentStrategy meituanLeafSegmentStrategy = new MeituanLeafSegmentStrategy();
         meituanLeafSegmentStrategy.setAsynLoadingSegment(ecpUidProperties.getMeituanLeaf().getAsynLoadingSegment());
@@ -85,37 +80,37 @@ public class EcpUidAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy}'.equals('baidu')}")
     public BaiduUidStrategy baiduUidStrategy() {
         BaiduUidStrategy baiduUidStrategy = new BaiduUidStrategy();
         BaiduUidProperties baiduUidProperties = ecpUidProperties.getBaiduUid();
-
-        UidGenerator uidGenerator = null;
-        if (UidGeneratorTypeEnum.CACHE.equals(baiduUidProperties.getType())) {
-            uidGenerator = new CachedUidGenerator();
-        } else if (UidGeneratorTypeEnum.DEFAULT.equals(baiduUidProperties.getType())) {
-            uidGenerator = new DefaultUidGenerator();
-        } else {
-            throw new IllegalArgumentException(String.format("UidGeneratorType:[%s] is illegal", baiduUidProperties.getType()));
-        }
-        DefaultUidGenerator defaultUidGenerator = (DefaultUidGenerator) uidGenerator;
-        defaultUidGenerator.setEpochStr(baiduUidProperties.getEpochStr());
-        defaultUidGenerator.setTimeBits(baiduUidProperties.getTimeBits());
-        defaultUidGenerator.setSeqBits(baiduUidProperties.getSeqBits());
-
-        WorkerIdAssigner workerIdAssigner = createWorkerIdAssigner(baiduUidProperties);
-        defaultUidGenerator.setWorkerIdAssigner(workerIdAssigner);
-
-        try {
-            defaultUidGenerator.afterPropertiesSet();
-        } catch (Exception e) {
-            log.error("初始化UidGenerator失败", e);
-            throw new RuntimeException(e);
-        }
-        baiduUidStrategy.setUidGenerator(uidGenerator);
+        baiduUidStrategy.setUidGenerator(uidGenerator(baiduUidProperties));
         return baiduUidStrategy;
     }
 
     @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy}'.equals('baidu')}")
+    public UidGenerator uidGenerator(BaiduUidProperties baiduUidProperties) {
+        DefaultUidGenerator defaultUidGenerator = null;
+        if (UidGeneratorTypeEnum.CACHE.equals(baiduUidProperties.getType())) {
+            defaultUidGenerator = new CachedUidGenerator();
+        } else if (UidGeneratorTypeEnum.DEFAULT.equals(baiduUidProperties.getType())) {
+            defaultUidGenerator = new DefaultUidGenerator();
+        } else {
+            throw new IllegalArgumentException(String.format("UidGeneratorType:[%s] is illegal", baiduUidProperties.getType()));
+        }
+        defaultUidGenerator.setEpochStr(baiduUidProperties.getEpochStr());
+        defaultUidGenerator.setTimeBits(baiduUidProperties.getTimeBits());
+        defaultUidGenerator.setWorkerBits(baiduUidProperties.getWorkerBits());
+        defaultUidGenerator.setSeqBits(baiduUidProperties.getSeqBits());
+
+        WorkerIdAssigner workerIdAssigner = createWorkerIdAssigner(baiduUidProperties);
+        defaultUidGenerator.setWorkerIdAssigner(workerIdAssigner);
+        return defaultUidGenerator;
+    }
+
+    @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.strategy.baidu-uid.worker-id-assigner}' != null or '${ecp.uid.strategy.twitter-snowflake.worker-id-assigner}' != null}")
     public WorkerIdAssigner createWorkerIdAssigner(WorkerIdAssignerProperties workerIdAssignerProperties) {
         // workId 分配方式
         WorkerIdAssigner workerIdAssigner = null;
@@ -124,11 +119,11 @@ public class EcpUidAutoConfiguration {
             zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZookeeperConnection());
             workerIdAssigner = zkWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.DB.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            WorkerNodeDAO workerNodeDAO = new WorkerNodeDAO(jdbcTemplate);
+            WorkerNodeDAO workerNodeDAO = workNodeDAO();
             DisposableWorkerIdAssigner disposableWorkerIdAssigner = new DisposableWorkerIdAssigner(workerNodeDAO);
             workerIdAssigner = disposableWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.REDIS.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            RedisWorkIdAssigner redisWorkIdAssigner = new RedisWorkIdAssigner(redisTemplate);
+            RedisWorkIdAssigner redisWorkIdAssigner = redisWorkIdAssigner();
             workerIdAssigner = redisWorkIdAssigner;
         } else if (WorkerIdAssignerEnum.SIMPLE.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             SimpleWorkerIdAssigner simpleWorkerIdAssigner = new SimpleWorkerIdAssigner();
@@ -137,6 +132,18 @@ public class EcpUidAutoConfiguration {
             throw new IllegalArgumentException(String.format("WorkerIdAssigner:[%s] is illegal", workerIdAssignerProperties.getWorkerIdAssigner()));
         }
         return workerIdAssigner;
+    }
+
+    @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.baidu-uid.worker-id-assigner}'.equals('db') or '${ecp.uid.twitter-snowflake.worker-id-assigner}'.equals('db')}")
+    public WorkerNodeDAO workNodeDAO() {
+        return new WorkerNodeDAO();
+    }
+
+    @Bean
+    @ConditionalOnExpression("#{'${ecp.uid.baidu-uid.worker-id-assigner}'.equals('redis') or '${ecp.uid.twitter-snowflake.worker-id-assigner}'.equals('redis')}")
+    public RedisWorkIdAssigner redisWorkIdAssigner() {
+        return new RedisWorkIdAssigner();
     }
 
 }

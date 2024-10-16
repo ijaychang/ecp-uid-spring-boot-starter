@@ -23,7 +23,6 @@ import org.springframework.data.redis.core.RedisTemplate;
  *     ----------------------------------------------
  * </pre>
  */
-@AllArgsConstructor
 public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     /**
      * redis上uid 机器节点的key前缀
@@ -39,8 +38,9 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
      * uid 活跃节点心跳列表(用于保存活跃节点及活跃心跳)
      */
     public static final String UID_TEMPORARY = UID_ROOT.concat("temporary:");
-    
-    private final RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     
     @Override
     public long action() {
