@@ -86,13 +86,6 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             }
             if (null != workerId) {
                 startHeartBeatThread();
-                File pidHomeDir = new File(pidHome);
-                if (!pidHomeDir.exists()) {
-                    boolean mkdirSuccess = pidHomeDir.mkdir();
-                    if (!mkdirSuccess) {
-                        throw new RuntimeException(String.format("Create %s failure", pidHome));
-                    }
-                }
                 // 赋值workerId
                 WorkerIdUtils.writePidFile(pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId);
             }
