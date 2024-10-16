@@ -1,5 +1,8 @@
 package cn.jaychang.ecp.uid.extend.annotation;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * @类名称 UidModel.java
  * @类描述 <pre>id生产模式</pre>
@@ -15,13 +18,14 @@ package cn.jaychang.ecp.uid.extend.annotation;
  *     ----------------------------------------------
  * </pre>
  */
+@Getter
 public enum UidModel {
     /**
      * 步长自增(空实现,依赖数据库步长设置)
      */
     STEP("step"),
     /**
-     * 分段批量(基于leaf)
+     * 分段批量(基于美团leaf)
      */
     SEGMENT("segment"),
     /**
@@ -37,13 +41,5 @@ public enum UidModel {
         this.name = name;
     }
     
-    private String name;
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
+    private final String name;
 }

@@ -33,21 +33,21 @@ public class EcpUidProperties implements Serializable {
     /**
      * baidu uid配置
      */
-    private BaiduProperties baidu;
+    private BaiduUidProperties baiduUid;
 
     /**
      * 美团 leaf配置
      */
-    private LeafProperties leaf;
+    private MeituanLeafProperties meituanLeaf;
 
     /**
      * Twitter snowflake配置
      */
-    private SnowflakeProperties snowflake;
+    private TwitterSnowflakeProperties twitterSnowflake;
 
     /**
      * Spring 数据库字段自增方式配置
      */
-    private SpringProperties spring;
+    private SpringStepProperties springStep;
 
 }

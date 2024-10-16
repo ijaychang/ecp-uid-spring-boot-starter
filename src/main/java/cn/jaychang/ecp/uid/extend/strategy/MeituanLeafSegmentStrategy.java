@@ -25,7 +25,7 @@ import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
  *     ----------------------------------------------
  * </pre>
  */
-public class LeafSegmentStrategy implements IUidStrategy {
+public class MeituanLeafSegmentStrategy implements IUidStrategy {
     private final static String MSG_UID_PARSE = "{\"UID\":\"%s\"}";
     
     /**

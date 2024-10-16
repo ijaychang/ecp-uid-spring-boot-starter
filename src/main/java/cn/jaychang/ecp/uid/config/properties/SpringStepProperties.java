@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @Accessors(chain = true)
-public class SnowflakeProperties implements Serializable {
+public class SpringStepProperties extends MeituanLeafProperties implements Serializable {
 
-    private static final long serialVersionUID = -552051843461413001L;
+    private static final long serialVersionUID = 4414114365097978569L;
 }

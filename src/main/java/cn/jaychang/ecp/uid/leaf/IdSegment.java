@@ -17,7 +17,7 @@ import java.util.Date;
  *     ----------------------------------------------
  * </pre>
  */
-public class IdSegment {
+public class  IdSegment {
     /**
      * 最小id
      */

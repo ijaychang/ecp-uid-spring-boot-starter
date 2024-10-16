@@ -3,6 +3,7 @@ package cn.jaychang.ecp.uid.worker;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -22,6 +23,7 @@ import org.springframework.data.redis.core.RedisTemplate;
  *     ----------------------------------------------
  * </pre>
  */
+@AllArgsConstructor
 public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     /**
      * redis上uid 机器节点的key前缀
@@ -38,8 +40,7 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
      */
     public static final String UID_TEMPORARY = UID_ROOT.concat("temporary:");
     
-    @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     
     @Override
     public long action() {

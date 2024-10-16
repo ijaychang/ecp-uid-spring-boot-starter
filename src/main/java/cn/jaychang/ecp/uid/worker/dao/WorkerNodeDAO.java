@@ -18,6 +18,7 @@ package cn.jaychang.ecp.uid.worker.dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -29,10 +30,10 @@ import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
  *
  * @author yutianbao
  */
+@AllArgsConstructor
 public class WorkerNodeDAO {
     
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
     
     /**
      * Get {@link WorkerNode} by node host

@@ -54,19 +54,19 @@ public class SnowflakeIdWorker {
     private final static String DATE_PATTERN_DEFAULT = "yyyy-MM-dd HH:mm:ss";
     
     // ==============================Fields===========================================
-    /** 开始时间截 (2017-12-25)，用于用当前时间戳减去这个时间戳，算出偏移量 */
-    private final long twepoch = 1514131200000L;
+    /** 开始时间截 (2024-10-15)，用于用当前时间戳减去这个时间戳，算出偏移量 */
+    private final long twepoch = 1728921600000L;
     
     /** 机器id所占的位数(表示只允许workId的范围为：0-1023) */
     private final long workerIdBits = 5L;
     
-    /** 数据标识id所占的位数 */
+    /** 数据中心标识id所占的位数 */
     private final long datacenterIdBits = 5L;
     
     /** 支持的最大机器id，结果是31 (这个移位算法可以很快的计算出几位二进制数所能表示的最大十进制数) */
     public final long maxWorkerId = -1L ^ (-1L << workerIdBits);
     
-    /** 支持的最大数据标识id，结果是31 */
+    /** 支持的最大数据中心标识id，结果是31 */
     private final long maxDatacenterId = -1L ^ (-1L << datacenterIdBits);
     
     /** 序列在id中占的位数 (表示只允许sequenceId的范围为：0-4095)*/

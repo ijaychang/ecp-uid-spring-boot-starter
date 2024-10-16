@@ -1,5 +1,7 @@
 package cn.jaychang.ecp.uid.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -19,6 +21,7 @@ import java.net.ServerSocket;
  *     ----------------------------------------------
  * </pre>
  */
+@Slf4j
 public class WorkerIdUtils {
     /**
      * workerID文件 分隔符
@@ -40,6 +43,7 @@ public class WorkerIdUtils {
             try {
                 socket = new ServerSocket(pidPort);
             } catch (IOException e) {
+                log.error("接口占用失败！", e);
                 throw new RuntimeException("接口占用失败！");
             }
         }
