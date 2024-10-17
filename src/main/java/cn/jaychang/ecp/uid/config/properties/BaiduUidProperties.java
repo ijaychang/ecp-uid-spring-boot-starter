@@ -4,6 +4,7 @@ import cn.jaychang.ecp.uid.baidu.buffer.RingBuffer;
 import cn.jaychang.ecp.uid.baidu.enums.UidGeneratorTypeEnum;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
 
@@ -13,20 +14,29 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
+@ConfigurationProperties(prefix = "ecp.uid.baidu-uid")
 public class BaiduUidProperties extends WorkerIdAssignerProperties implements Serializable {
 
     private static final long serialVersionUID = 5040536433413671208L;
-    /**
-     * Bits allocate
-     */
-    private int timeBits = 34;
-    private int workerBits = 16;
-    private int seqBits = 13;
+
 
     /**
      * UID Generator Type
      */
     private UidGeneratorTypeEnum type = UidGeneratorTypeEnum.CACHE;
+
+    /**
+     * Bits allocate: delta seconds bits represents delta seconds since a customer epoch(2024-10-15 00:00:00.000), default value:34
+     */
+    private int timeBits = 34;
+    /**
+     * Bits allocate: worker id bits represents the worker's id which assigns based on worker id assigner, default value:16
+     */
+    private int workerBits = 16;
+    /**
+     * Bits allocate: sequence bits represents a sequence within the same second, default value:13
+     */
+    private int seqBits = 13;
 
     /**
      * Customer epoch, unit as second. For example 2024-10-15 (ms: 1728921600000)
@@ -52,5 +62,7 @@ public class BaiduUidProperties extends WorkerIdAssignerProperties implements Se
      * 默认:不配置此项, 即不实用Schedule线程. 如需使用, 请指定Schedule线程时间间隔, 单位:秒
      */
     private Integer scheduleInterval;
+
+
 
 }

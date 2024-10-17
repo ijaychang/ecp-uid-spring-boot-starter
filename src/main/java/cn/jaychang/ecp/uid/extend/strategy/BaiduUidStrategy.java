@@ -32,7 +32,7 @@ public class BaiduUidStrategy implements IUidStrategy {
     
     @Autowired
     private UidGenerator uidGenerator;
-    
+
     @Override
     public UidModelEnum getName() {
         return UidModelEnum.BAIDU_UID;
@@ -78,7 +78,7 @@ public class BaiduUidStrategy implements IUidStrategy {
      */
     @Lookup
     public UidGenerator getGenerator() {
-      return null;
+        return null;
     }
 
     public UidGenerator getUidGenerator() {

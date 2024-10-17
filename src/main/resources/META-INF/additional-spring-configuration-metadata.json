@@ -8,9 +8,9 @@
   ],
   "properties": [
     {
-      "name": "ecp.uid.baidu-uid",
-      "type": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties",
-      "description": "baidu uid 生成策略的配置",
+      "name": "ecp.uid.strategy",
+      "type": "java.lang.String",
+      "description": "uid 生成策略，可选值：spring-step,twitter-snowflake,baidu-uid,meituan-leaf",
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
     },
     {
@@ -26,27 +26,33 @@
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
     },
     {
-      "name": "ecp.uid.meituan-leaf",
-      "type": "cn.jaychang.ecp.uid.config.properties.MeituanLeafProperties",
-      "description": "meituan leaf 生成策略的配置",
-      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
-    },
-    {
       "name": "ecp.uid.spring-step",
       "type": "cn.jaychang.ecp.uid.config.properties.SpringStepProperties",
       "description": "spring step 生成策略的配置",
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
     },
     {
-      "name": "ecp.uid.strategy",
-      "type": "java.lang.String",
-      "description": "uid 生成策略，可选值：spring-step,twitter-snowflake,baidu-uid,meituan-leaf",
-      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
-    },
-    {
       "name": "ecp.uid.twitter-snowflake",
       "type": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties",
       "description": "twitter snowflake 生成策略的配置",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid",
+      "type": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties",
+      "description": "baidu uid 生成策略的配置",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid",
+      "type": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties",
+      "description": "baidu uid 生成策略的配置",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
+    },
+    {
+      "name": "ecp.uid.meituan-leaf",
+      "type": "cn.jaychang.ecp.uid.config.properties.MeituanLeafProperties",
+      "description": "meituan leaf 生成策略的配置",
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
     }
   ],
