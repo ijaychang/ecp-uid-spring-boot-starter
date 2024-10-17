@@ -152,7 +152,7 @@ pom引入ecp-uid-spring-boot-starter
 </dependency>
 ```
 
-* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 zookeeper 
+* 使用Baidu Uid-Generator 生成策略，workerId分配方式使用 zookeeper 
 pom还需要引入 zkclient
 ```xml
 <dependency>
@@ -165,13 +165,13 @@ application.yml
 ```yaml
 ecp:
   uid:
-    strategy: baidu
+    strategy: baidu-uid
     baidu-uid:
       workerIdAssigner: zk
       zkAddr: localhost:2181
 ```
 
-* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 redis
+* 使用Baidu Uid-Generator 生成策略，workerId分配方式使用 redis
 
 pom还需要引入 spring-boot-starter-data-redis 
 ```xml
@@ -219,7 +219,7 @@ spring:
 
 ```
 
-* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 db
+* 使用Baidu Uid-Generator 生成策略，workerId分配方式使用 db
   
 创建数据库表
 
@@ -266,3 +266,22 @@ spring:
       password: 123456
 ```
 
+* 使用Twitter Snowflake 生成策略，workerId分配方式使用 zookeeper (其他方式与Baidu Uid 生成策略类似，不再赘述)
+
+pom还需要引入 zkclient
+```xml
+<dependency>
+    <groupId>com.101tec</groupId>
+    <artifactId>zkclient</artifactId>
+    <version>0.11</version>
+</dependency>
+```
+application.yml
+```yaml
+ecp:
+  uid:
+    strategy: twitter-snowflake
+    baidu-uid:
+      workerIdAssigner: zk
+      zkAddr: localhost:2181
+```
