@@ -152,16 +152,6 @@ pom引入ecp-uid-spring-boot-starter
 </dependency>
 ```
 
-* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 db
-```xml
-<dependency>
-    <groupId>com.101tec</groupId>
-    <artifactId>zkclient</artifactId>
-    <version>0.11</version>
-</dependency>
-```
-
-
 * 使用Baidu Uid-Generator 生成策略，workId分配方式使用 zookeeper 
 pom还需要引入 zkclient
 ```xml
@@ -171,7 +161,7 @@ pom还需要引入 zkclient
     <version>0.11</version>
 </dependency>
 ```
-
+application.yml
 ```yaml
 ecp:
   uid:
@@ -214,7 +204,7 @@ pom还需要引入 spring-boot-starter-data-redis
     </dependency>
 </dependencies>
 ```
-
+application.yml
 ```yaml
 ecp:
   uid:
@@ -228,3 +218,51 @@ spring:
     port: 6379
 
 ```
+
+* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 db
+  
+创建数据库表
+
+```sql
+CREATE TABLE `worker_node` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'auto increment id',
+  `host_name` varchar(64) NOT NULL COMMENT 'host name',
+  `port` varchar(64) NOT NULL COMMENT 'port',
+  `type` int(11) NOT NULL COMMENT 'node type: [2=ACTUAL or 1=CONTAINER]',
+  `launch_date` date NOT NULL COMMENT 'launch date',
+  `update_time` datetime NOT NULL COMMENT 'update time',
+  `create_time` datetime NOT NULL COMMENT 'create time',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='DB WorkerID Assigner for UID Generator';
+```
+
+pom还需要引入 spring-boot-starter-jdbc
+
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+```
+
+
+
+application.yml
+
+```yaml
+ecp:
+  uid:
+    strategy: baidu-uid
+    baidu-uid:
+      workerIdAssigner: db
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/test?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&connectTimeout=60000&socketTimeout=60000&autoReconnect=true&failOverReadOnly=false&useSSL=true&useUnicode=true
+    hikari:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: 123456
+```
+

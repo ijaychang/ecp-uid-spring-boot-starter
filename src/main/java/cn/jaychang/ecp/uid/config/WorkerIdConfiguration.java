@@ -13,7 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 /**
- * worker id 配置
+ * worker id 分配器配置
+ *
  * @author jaychang
  */
 @Configuration
@@ -22,17 +23,23 @@ public class WorkerIdConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnExpression("#{'${ecp.uid.strategy.baidu-uid.worker-id-assigner}' != null or '${ecp.uid.strategy.twitter-snowflake.worker-id-assigner}' != null}")
     public WorkerIdAssigner createWorkerIdAssigner(WorkerIdAssignerProperties workerIdAssignerProperties) {
-        // workId 分配方式
+        // workerId 分配方式
         WorkerIdAssigner workerIdAssigner = null;
         if (WorkerIdAssignerEnum.ZK.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             ZkWorkerIdAssigner zkWorkerIdAssigner = new ZkWorkerIdAssigner();
             zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddress());
+            zkWorkerIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
+            zkWorkerIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
+            zkWorkerIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
             workerIdAssigner = zkWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.DB.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             DisposableWorkerIdAssigner disposableWorkerIdAssigner = new DisposableWorkerIdAssigner(workNodeDao());
             workerIdAssigner = disposableWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.REDIS.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             RedisWorkIdAssigner redisWorkIdAssigner = redisWorkIdAssigner();
+            redisWorkIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
+            redisWorkIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
+            redisWorkIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
             workerIdAssigner = redisWorkIdAssigner;
         } else if (WorkerIdAssignerEnum.SIMPLE.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             SimpleWorkerIdAssigner simpleWorkerIdAssigner = new SimpleWorkerIdAssigner();
