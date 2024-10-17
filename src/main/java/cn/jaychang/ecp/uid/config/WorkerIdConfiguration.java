@@ -26,7 +26,7 @@ public class WorkerIdConfiguration {
         WorkerIdAssigner workerIdAssigner = null;
         if (WorkerIdAssignerEnum.ZK.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             ZkWorkerIdAssigner zkWorkerIdAssigner = new ZkWorkerIdAssigner();
-            zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZookeeperConnection());
+            zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddress());
             workerIdAssigner = zkWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.DB.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             DisposableWorkerIdAssigner disposableWorkerIdAssigner = new DisposableWorkerIdAssigner(workNodeDao());
