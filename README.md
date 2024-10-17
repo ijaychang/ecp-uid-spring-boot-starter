@@ -1,5 +1,6 @@
-# ecp-uid
-居于美团leaf、百度UidGenerator、原生snowflake 进行整合的 唯一ID生成器
+# ecp-uid-spring-boot-starter
+基于美团leaf、百度UidGenerator、原生snowflake 进行整合的 唯一ID生成器，本项目在ecp-uid基础上，再整合成spring boot starter,
+方便spring boot类型项目引入ecp-uid
 
 一、介绍
 -------------------
@@ -7,7 +8,7 @@
    
    2、本项目可生成混淆id，目前混淆策略为：gene(基因法)
 
-   3、项目地址：
+   3、原项目地址：
       github ： https://github.com/linhuaichuan/ecp-uid
       码云： https://gitee.com/zmds/ecp-uid
    
@@ -24,19 +25,19 @@
      		 
      (1)、workerId提供策略
          * DisposableWorkerIdAssigner，利用数据库来管理生成workId，依赖数据库和spring-jdbc框架(需有jdbcTemplate的bean)。mysql表示例：
-        DROP TABLE IF EXISTS WORKER_NODE;
-        CREATE TABLE WORKER_NODE
-        (
-        ID BIGINT NOT NULL AUTO_INCREMENT COMMENT 'auto increment id',
-        HOST_NAME VARCHAR(64) NOT NULL COMMENT 'host name',
-        `PORT` VARCHAR(64) NOT NULL COMMENT 'port',
-        `TYPE` INT NOT NULL COMMENT 'node type: ACTUAL or CONTAINER',
-        `LAUNCH_DATE` DATE NOT NULL COMMENT 'launch date',
-        `MODIFIED` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'modified time',
-        `CREATED` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
-        PRIMARY KEY(ID)
-        )
-        COMMENT='DB WorkerID Assigner for UID Generator',ENGINE = INNODB;
+        DROP TABLE IF EXISTS worker_node;
+        CREATE TABLE worker_node (
+        id BIGINT NOT NULL AUTO_INCREMENT COMMENT 'auto increment id',
+        host_name VARCHAR (64) NOT NULL COMMENT 'host name',
+        `port` VARCHAR (64) NOT NULL COMMENT 'port',
+        `type` INT NOT NULL COMMENT 'node type: ACTUAL or CONTAINER',
+        `launch_date` DATE NOT NULL COMMENT 'launch date',
+        `update_time` DATETIME NOT NULL COMMENT 'update time',
+        `create_time` DATETIME NOT NULL COMMENT 'create time',
+        PRIMARY KEY (ID)
+        ) COMMENT = 'DB WorkerID Assigner for UID Generator',
+        ENGINE = INNODB;      
+
 		 
 		示例：
 		<bean id="disposableWorker" class="**.DisposableWorkerIdAssigner"/>
@@ -139,10 +140,91 @@
    5、混淆算法
       是 基于 基因分库法这个理论扩展出来的混淆算法
       
-三 、使用
+三 、快速开始
 -------------------
-     <bean class="**.UidContext">
-         <property name="uidStrategy" ref="上述任何策略" />
-         <property name="factor" value="可选：基因因子，如设置则启用混淆" />
-         <property name="fixed" value="可选：除余底数，建议使用固定值，不可更改" />
-     </bean>
+
+pom引入ecp-uid-spring-boot-starter
+```xml
+<dependency>
+    <groupId>cn.jaychang</groupId>
+    <artifactId>ecp-uid-spring-boot-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 db
+```xml
+<dependency>
+    <groupId>com.101tec</groupId>
+    <artifactId>zkclient</artifactId>
+    <version>0.11</version>
+</dependency>
+```
+
+
+* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 zookeeper 
+pom还需要引入 zkclient
+```xml
+<dependency>
+    <groupId>com.101tec</groupId>
+    <artifactId>zkclient</artifactId>
+    <version>0.11</version>
+</dependency>
+```
+
+```yaml
+ecp:
+  uid:
+    strategy: baidu
+    baidu-uid:
+      workerIdAssigner: zk
+      zookeeperConnection: localhost:2181
+```
+
+* 使用Baidu Uid-Generator 生成策略，workId分配方式使用 redis
+
+pom还需要引入 spring-boot-starter-data-redis 
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <!-- Import dependency management from Spring Boot -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    其他省略...
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.lettuce</groupId>
+        <artifactId>lettuce-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-pool2</artifactId>
+    </dependency>
+</dependencies>
+```
+
+```yaml
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    
+ecp:
+  uid:
+    strategy: baidu
+    baidu-uid:
+      workerIdAssigner: redis
+
+```

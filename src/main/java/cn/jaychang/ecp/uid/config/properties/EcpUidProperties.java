@@ -31,6 +31,18 @@ public class EcpUidProperties implements Serializable {
 
 
     /**
+     * 可选：除余基数，建议使用固定值，不可更改 控制位移
+     */
+    private Integer fixed;
+
+
+    /**
+     * 可选：基因因子，如设置则启用混淆
+     */
+    private Long factor;
+
+
+    /**
      * baidu uid配置
      */
     private BaiduUidProperties baiduUid;

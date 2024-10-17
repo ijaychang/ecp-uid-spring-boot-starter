@@ -3,8 +3,8 @@ package cn.jaychang.ecp.uid.worker;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -40,6 +40,7 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     public static final String UID_TEMPORARY = UID_ROOT.concat("temporary:");
 
     @Autowired
+    @Qualifier("redisTemplateForWorkIdAssigner")
     private RedisTemplate<String, Object> redisTemplate;
     
     @Override

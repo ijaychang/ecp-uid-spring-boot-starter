@@ -2,16 +2,15 @@ package cn.jaychang.ecp.uid.worker;
 
 import java.util.Random;
 
-import javax.annotation.Resource;
 
 import cn.jaychang.ecp.uid.baidu.utils.DockerUtils;
+import cn.jaychang.ecp.uid.worker.dao.WorkerNodeDao;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import cn.jaychang.ecp.uid.util.NetUtils;
-import cn.jaychang.ecp.uid.worker.dao.WorkerNodeDAO;
 import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
 
 /**
@@ -22,7 +21,7 @@ import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
 public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DisposableWorkerIdAssigner.class);
     
-    private final WorkerNodeDAO workerNodeDAO;
+    private final WorkerNodeDao workerNodeDao;
 
     /**
      * Assign worker id base on database.<p>
@@ -38,7 +37,7 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
         WorkerNode workerNodeEntity = buildWorkerNode();
 
         // add worker node for new (ignore the same IP + PORT)
-        workerNodeDAO.addWorkerNode(workerNodeEntity);
+        workerNodeDao.addWorkerNode(workerNodeEntity);
         LOGGER.info("Add worker node:" + workerNodeEntity);
 
         return workerNodeEntity.getId();

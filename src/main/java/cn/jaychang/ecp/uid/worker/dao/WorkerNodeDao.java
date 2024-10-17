@@ -18,7 +18,6 @@ package cn.jaychang.ecp.uid.worker.dao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -30,7 +29,7 @@ import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
  *
  * @author yutianbao
  */
-public class WorkerNodeDAO {
+public class WorkerNodeDao {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -44,18 +43,18 @@ public class WorkerNodeDAO {
      */
     public WorkerNode getWorkerNodeByHostPort(String host, String port) {
         final WorkerNode workerNode = new WorkerNode();
-        String querySql = "SELECT * FROM WORKER_NODE where HOST_NAME = ? AND PORT = ? ";
+        String querySql = "SELECT * FROM worker_node where host_name = ? AND port = ? ";
         this.jdbcTemplate.query(querySql, new String[] {host, port}, new RowCallbackHandler() {
             @Override
             public void processRow(ResultSet rs)
                 throws SQLException {
-                workerNode.setId(rs.getLong("ID"));
-                workerNode.setHostName(rs.getString("HOST_NAME"));
-                workerNode.setPort(rs.getString("PORT"));
-                workerNode.setType(rs.getInt("TYPE"));
-                workerNode.setLaunchDateDate(rs.getDate("LAUNCH_DATE"));
-                workerNode.setModified(rs.getDate("MODIFIED"));
-                workerNode.setCreated(rs.getDate("CREATED"));
+                workerNode.setId(rs.getLong("id"));
+                workerNode.setCreated(rs.getDate("create_time"));
+                workerNode.setModified(rs.getDate("update_time"));
+                workerNode.setHostName(rs.getString("host_name"));
+                workerNode.setPort(rs.getString("port"));
+                workerNode.setType(rs.getInt("type"));
+                workerNode.setLaunchDateDate(rs.getDate("launch_date"));
             }
         });
         return workerNode;
@@ -67,7 +66,7 @@ public class WorkerNodeDAO {
      * @param workerNode
      */
     public void addWorkerNode(WorkerNode workerNode) {
-        String sql = "INSERT INTO WORKER_NODE(HOST_NAME, PORT, TYPE, LAUNCH_DATE, MODIFIED, CREATED) " + " VALUES (?, ?, ?, ?, NOW(), NOW())";
+        String sql = "INSERT INTO worker_node(create_time, update_time, host_name, port, type, launch_date) " + " VALUES (NOW(), NOW(), ?, ?, ?, ?)";
         this.jdbcTemplate.update(sql, new Object[] {workerNode.getHostName(), workerNode.getPort(), workerNode.getType(), workerNode.getLaunchDate()});
     }
     
