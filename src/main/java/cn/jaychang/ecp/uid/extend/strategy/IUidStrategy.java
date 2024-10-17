@@ -1,6 +1,6 @@
 package cn.jaychang.ecp.uid.extend.strategy;
 
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 
 /**
  * @类名称 IUidStrategy.java
@@ -24,7 +24,7 @@ public interface IUidStrategy {
      * @功能描述 <pre>策略名</pre>
      * @return
      */
-    public UidModel getName();
+    UidModelEnum getName();
 
     /**
      * @方法名称 getUID
@@ -32,7 +32,7 @@ public interface IUidStrategy {
      * @param group 分组
      * @return id
      */
-    public long getUID(String group);
+    long getUID(String group);
 
     /**
      * @方法名称 parseUID

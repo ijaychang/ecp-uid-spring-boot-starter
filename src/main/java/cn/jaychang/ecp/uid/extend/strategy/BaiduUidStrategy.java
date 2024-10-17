@@ -3,12 +3,12 @@ package cn.jaychang.ecp.uid.extend.strategy;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.util.StringUtils;
 
 import cn.jaychang.ecp.uid.baidu.UidGenerator;
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
 
 /**
  * baidu uid生成策略
@@ -34,8 +34,8 @@ public class BaiduUidStrategy implements IUidStrategy {
     private UidGenerator uidGenerator;
     
     @Override
-    public UidModel getName() {
-        return UidModel.BAIDU;
+    public UidModelEnum getName() {
+        return UidModelEnum.BAIDU_UID;
     }
     
     /**

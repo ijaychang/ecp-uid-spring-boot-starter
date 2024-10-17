@@ -1,6 +1,6 @@
 package cn.jaychang.ecp.uid.config.properties;
 
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,7 +27,7 @@ public class EcpUidProperties implements Serializable {
      * BAIDU 百度UidGenerator
      * </p>
      */
-    private String strategy = UidModel.SNOWFLAKE.getName();
+    private String strategy = UidModelEnum.TWITTER_SNOWFLAKE.getName();
 
 
     /**

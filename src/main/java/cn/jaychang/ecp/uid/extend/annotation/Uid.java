@@ -31,7 +31,7 @@ public @interface Uid {
      * @方法名称 model
      * @功能描述 <pre>uid 生成模式</pre>
      */
-    UidModel model() default UidModel.STEP;
+    UidModelEnum model() default UidModelEnum.SPRING_STEP;
 
     /**
      * 前缀

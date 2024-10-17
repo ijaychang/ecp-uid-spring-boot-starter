@@ -1,6 +1,7 @@
 package cn.jaychang.ecp.uid;
 
 import cn.jaychang.ecp.uid.extend.strategy.IUidStrategy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @类名称 UidContext.java
@@ -22,7 +23,8 @@ public class UidContext {
      * 空组
      */
     private static final String EMPTY_STR = "";
-    
+
+    @Autowired
     private IUidStrategy uidStrategy;
     
     /**
@@ -35,8 +37,7 @@ public class UidContext {
      */
     public Long factor;
     
-    public UidContext(IUidStrategy uidStrategy) {
-        this.uidStrategy = uidStrategy;
+    public UidContext() {
     }
     
     /**

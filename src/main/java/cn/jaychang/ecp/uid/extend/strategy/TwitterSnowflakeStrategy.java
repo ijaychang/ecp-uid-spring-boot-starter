@@ -4,7 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 import cn.jaychang.ecp.uid.twitter.SnowflakeIdWorker;
 import cn.jaychang.ecp.uid.util.NetUtils;
 import cn.jaychang.ecp.uid.worker.WorkerIdAssigner;
@@ -43,8 +43,8 @@ public class TwitterSnowflakeStrategy implements IUidStrategy {
     protected WorkerIdAssigner assigner;
     
     @Override
-    public UidModel getName() {
-        return UidModel.SNOWFLAKE;
+    public UidModelEnum getName() {
+        return UidModelEnum.TWITTER_SNOWFLAKE;
     }
     
     @Override

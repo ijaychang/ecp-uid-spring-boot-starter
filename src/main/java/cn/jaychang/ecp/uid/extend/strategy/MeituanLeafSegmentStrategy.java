@@ -3,10 +3,10 @@ package cn.jaychang.ecp.uid.extend.strategy;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
 import cn.jaychang.ecp.uid.leaf.ISegmentService;
 import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
 
@@ -59,8 +59,8 @@ public class MeituanLeafSegmentStrategy implements IUidStrategy {
     }
     
     @Override
-    public UidModel getName() {
-        return UidModel.SEGMENT;
+    public UidModelEnum getName() {
+        return UidModelEnum.MEITUAN_LEAF;
     }
     
     @Override

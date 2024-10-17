@@ -1,6 +1,6 @@
 package cn.jaychang.ecp.uid.extend.strategy;
 
-import cn.jaychang.ecp.uid.extend.annotation.UidModel;
+import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
 import cn.jaychang.ecp.uid.spring.ColumnMaxValueIncrementer;
 import cn.jaychang.ecp.uid.leaf.ISegmentService;
 
@@ -21,8 +21,8 @@ import cn.jaychang.ecp.uid.leaf.ISegmentService;
  */
 public class SpringStepStrategy extends MeituanLeafSegmentStrategy {
     @Override
-    public UidModel getName() {
-        return UidModel.STEP;
+    public UidModelEnum getName() {
+        return UidModelEnum.SPRING_STEP;
     }
     
     @Override
