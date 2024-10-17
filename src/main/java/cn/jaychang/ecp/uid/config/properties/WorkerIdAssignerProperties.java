@@ -6,6 +6,11 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
+/**
+ * worker id 分配器属性配置类
+ *
+ * @author jaychang
+ */
 @Data
 @Accessors(chain = true)
 public class WorkerIdAssignerProperties implements Serializable {
@@ -20,5 +25,5 @@ public class WorkerIdAssignerProperties implements Serializable {
     /**
      * zookeeper address
      */
-    private String zookeeperConnection = "localhost:2181";
+    private String zkAddress = "localhost:2181";
 }

@@ -178,7 +178,7 @@ ecp:
     strategy: baidu
     baidu-uid:
       workerIdAssigner: zk
-      zookeeperConnection: localhost:2181
+      zkAddr: localhost:2181
 ```
 
 * 使用Baidu Uid-Generator 生成策略，workId分配方式使用 redis
@@ -216,15 +216,15 @@ pom还需要引入 spring-boot-starter-data-redis
 ```
 
 ```yaml
+ecp:
+  uid:
+    strategy: baidu-uid
+    baidu-uid:
+      workerIdAssigner: redis
+
 spring:
   redis:
     host: localhost
     port: 6379
-    
-ecp:
-  uid:
-    strategy: baidu
-    baidu-uid:
-      workerIdAssigner: redis
 
 ```

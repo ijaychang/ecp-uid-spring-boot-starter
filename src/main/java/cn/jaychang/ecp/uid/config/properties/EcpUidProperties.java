@@ -7,6 +7,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.Serializable;
 
+/**
+ * ecp uid 配置属性类
+ *
+ * @author jaychang
+ */
 @Data
 @Accessors(chain = true)
 @ConfigurationProperties(prefix = "ecp.uid")

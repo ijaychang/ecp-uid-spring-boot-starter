@@ -5,6 +5,11 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
+/**
+ * twitter snowflake 属性配置类
+ *
+ * @author jaychang
+ */
 @Data
 @Accessors(chain = true)
 public class TwitterSnowflakeProperties extends WorkerIdAssignerProperties implements Serializable {

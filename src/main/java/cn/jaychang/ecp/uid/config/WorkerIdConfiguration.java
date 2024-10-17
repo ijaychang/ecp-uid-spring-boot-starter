@@ -5,15 +5,21 @@ import cn.jaychang.ecp.uid.worker.*;
 import cn.jaychang.ecp.uid.worker.dao.WorkerNodeDao;
 import cn.jaychang.ecp.uid.worker.enums.WorkerIdAssignerEnum;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+/**
+ * worker id 配置
+ * @author jaychang
+ */
 @Configuration
 public class WorkerIdConfiguration {
     @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnExpression("#{'${ecp.uid.strategy.baidu-uid.worker-id-assigner}' != null or '${ecp.uid.strategy.twitter-snowflake.worker-id-assigner}' != null}")
     public WorkerIdAssigner createWorkerIdAssigner(WorkerIdAssignerProperties workerIdAssignerProperties) {
         // workId 分配方式
@@ -39,6 +45,7 @@ public class WorkerIdConfiguration {
 
 
     @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnExpression("#{'${ecp.uid.baidu-uid.worker-id-assigner}'.equals('db') or '${ecp.uid.twitter-snowflake.worker-id-assigner}'.equals('db')}")
     public WorkerNodeDao workNodeDao() {
         return new WorkerNodeDao();
@@ -54,6 +61,7 @@ public class WorkerIdConfiguration {
      * @return {@link RedisTemplate}
      */
     @Bean(name = "redisTemplateForWorkIdAssigner")
+    @ConditionalOnMissingBean(name = "redisTemplateForWorkIdAssigner")
     @ConditionalOnExpression("#{'${ecp.uid.baidu-uid.worker-id-assigner}'.equals('redis') or '${ecp.uid.twitter-snowflake.worker-id-assigner}'.equals('redis')}")
     public RedisTemplate<String, Object> redisWorkIdAssigner(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -70,6 +78,7 @@ public class WorkerIdConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnExpression("#{'${ecp.uid.baidu-uid.worker-id-assigner}'.equals('redis') or '${ecp.uid.twitter-snowflake.worker-id-assigner}'.equals('redis')}")
     public RedisWorkIdAssigner redisWorkIdAssigner() {
         return new RedisWorkIdAssigner();

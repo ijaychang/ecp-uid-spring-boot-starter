@@ -5,6 +5,11 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
+/**
+ * spring step 属性配置类
+ *
+ * @author jaychang
+ */
 @Data
 @Accessors(chain = true)
 public class SpringStepProperties extends MeituanLeafProperties implements Serializable {

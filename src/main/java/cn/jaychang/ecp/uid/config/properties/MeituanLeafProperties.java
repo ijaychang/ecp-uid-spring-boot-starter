@@ -5,6 +5,11 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
+/**
+ * meituan leaf 配置属性类
+ *
+ * @author jaychang
+ */
 @Data
 @Accessors(chain = true)
 public class MeituanLeafProperties implements Serializable {
