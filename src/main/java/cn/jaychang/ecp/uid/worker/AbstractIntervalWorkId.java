@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cn.jaychang.ecp.uid.baidu.utils.NamingThreadFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import cn.jaychang.ecp.uid.util.WorkerIdUtils;
@@ -27,7 +28,7 @@ import cn.jaychang.ecp.uid.util.WorkerIdUtils;
  *     ----------------------------------------------
  * </pre>
  */
-public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean {
+public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean, DisposableBean {
     /**
      * 本地workid文件跟目录
      */
@@ -97,7 +98,14 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             throw e;
         }
     }
-    
+
+    @Override
+    public void destroy() throws Exception {
+         if (null != socket) {
+             socket.close();
+         }
+    }
+
     /**
      * @方法名称 action
      * @功能描述 <pre>workId文件不存在时的操作</pre>

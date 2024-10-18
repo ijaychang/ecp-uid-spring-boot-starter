@@ -5,10 +5,8 @@ import cn.jaychang.ecp.uid.baidu.enums.UidGeneratorTypeEnum;
 import cn.jaychang.ecp.uid.baidu.impl.CachedUidGenerator;
 import cn.jaychang.ecp.uid.baidu.impl.DefaultUidGenerator;
 import cn.jaychang.ecp.uid.config.properties.BaiduUidProperties;
-import cn.jaychang.ecp.uid.config.properties.WorkerIdAssignerProperties;
 import cn.jaychang.ecp.uid.extend.strategy.BaiduUidStrategy;
 import cn.jaychang.ecp.uid.worker.*;
-import cn.jaychang.ecp.uid.worker.enums.WorkerIdAssignerEnum;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,39 +47,8 @@ public class BaiduUidStrategyConfiguration extends WorkerIdConfiguration {
         defaultUidGenerator.setWorkerBits(baiduUidProperties.getWorkerBits());
         defaultUidGenerator.setSeqBits(baiduUidProperties.getSeqBits());
 
-        WorkerIdAssigner workerIdAssigner = createWorkerIdAssigner(baiduUidProperties);
+        WorkerIdAssigner workerIdAssigner = workerIdAssigner(baiduUidProperties);
         defaultUidGenerator.setWorkerIdAssigner(workerIdAssigner);
         return defaultUidGenerator;
     }
-
-
-    public WorkerIdAssigner createWorkerIdAssigner(WorkerIdAssignerProperties workerIdAssignerProperties) {
-        // workerId 分配方式
-        WorkerIdAssigner workerIdAssigner = null;
-        if (WorkerIdAssignerEnum.ZK.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            ZkWorkerIdAssigner zkWorkerIdAssigner = new ZkWorkerIdAssigner();
-            zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddress());
-            zkWorkerIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
-            zkWorkerIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
-            zkWorkerIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
-            workerIdAssigner = zkWorkerIdAssigner;
-        } else if (WorkerIdAssignerEnum.DB.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            DisposableWorkerIdAssigner disposableWorkerIdAssigner = new DisposableWorkerIdAssigner();
-            workerIdAssigner = disposableWorkerIdAssigner;
-        } else if (WorkerIdAssignerEnum.REDIS.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            RedisWorkIdAssigner redisWorkIdAssigner = new RedisWorkIdAssigner();
-            redisWorkIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
-            redisWorkIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
-            redisWorkIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
-            workerIdAssigner = redisWorkIdAssigner;
-        } else if (WorkerIdAssignerEnum.SIMPLE.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
-            SimpleWorkerIdAssigner simpleWorkerIdAssigner = new SimpleWorkerIdAssigner();
-            workerIdAssigner = simpleWorkerIdAssigner;
-        } else {
-            throw new IllegalArgumentException(String.format("WorkerIdAssigner:[%s] is illegal", workerIdAssignerProperties.getWorkerIdAssigner()));
-        }
-        return workerIdAssigner;
-    }
-
-
 }
