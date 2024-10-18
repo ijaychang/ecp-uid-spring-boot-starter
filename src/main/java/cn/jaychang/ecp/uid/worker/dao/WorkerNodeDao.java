@@ -49,8 +49,8 @@ public class WorkerNodeDao {
             public void processRow(ResultSet rs)
                 throws SQLException {
                 workerNode.setId(rs.getLong("id"));
-                workerNode.setCreated(rs.getDate("create_time"));
-                workerNode.setModified(rs.getDate("update_time"));
+                workerNode.setCreateTime(rs.getDate("create_time"));
+                workerNode.setUpdateTime(rs.getDate("update_time"));
                 workerNode.setHostName(rs.getString("host_name"));
                 workerNode.setPort(rs.getString("port"));
                 workerNode.setType(rs.getInt("type"));

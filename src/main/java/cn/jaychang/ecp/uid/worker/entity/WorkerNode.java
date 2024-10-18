@@ -57,12 +57,12 @@ public class WorkerNode {
     /**
      * Created time
      */
-    private Date created;
+    private Date createTime;
 
     /**
      * Last modified
      */
-    private Date modified;
+    private Date updateTime;
 
     /**
      * Getters & Setters
@@ -107,19 +107,19 @@ public class WorkerNode {
         this.launchDate = launchDate;
     }
 
-    public Date getCreated() {
-        return created;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public void setCreated(Date created) {
-        this.created = created;
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
-    public Date getModified() {
-        return modified;
+    public Date getUpdateTime() {
+        return updateTime;
     }
 
-    public void setModified(Date modified) {
-        this.modified = modified;
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 }
