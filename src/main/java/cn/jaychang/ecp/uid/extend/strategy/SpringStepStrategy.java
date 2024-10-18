@@ -19,7 +19,7 @@ import cn.jaychang.ecp.uid.leaf.ISegmentService;
  *     ----------------------------------------------
  * </pre>
  */
-public class SpringStepStrategy extends MeituanLeafSegmentStrategy {
+public class SpringStepStrategy extends MeituanLeafStrategy {
     @Override
     public UidModelEnum getName() {
         return UidModelEnum.SPRING_STEP;

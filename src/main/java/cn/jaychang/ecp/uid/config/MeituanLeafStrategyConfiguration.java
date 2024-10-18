@@ -1,7 +1,7 @@
 package cn.jaychang.ecp.uid.config;
 
 import cn.jaychang.ecp.uid.config.properties.MeituanLeafProperties;
-import cn.jaychang.ecp.uid.extend.strategy.MeituanLeafSegmentStrategy;
+import cn.jaychang.ecp.uid.extend.strategy.MeituanLeafStrategy;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,9 +20,9 @@ public class MeituanLeafStrategyConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MeituanLeafSegmentStrategy meituanLeafSegmentStrategy(MeituanLeafProperties meituanLeafProperties) {
-        MeituanLeafSegmentStrategy meituanLeafSegmentStrategy = new MeituanLeafSegmentStrategy();
-        meituanLeafSegmentStrategy.setAsynLoadingSegment(meituanLeafProperties.getAsynLoadingSegment());
-        return meituanLeafSegmentStrategy;
+    public MeituanLeafStrategy meituanLeafStrategy(MeituanLeafProperties meituanLeafProperties) {
+        MeituanLeafStrategy meituanLeafStrategy = new MeituanLeafStrategy();
+        meituanLeafStrategy.setAsynLoadingSegment(meituanLeafProperties.getAsynLoadingSegment());
+        return meituanLeafStrategy;
     }
 }
