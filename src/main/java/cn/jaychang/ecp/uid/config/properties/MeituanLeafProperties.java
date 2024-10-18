@@ -18,6 +18,8 @@ public class MeituanLeafProperties implements Serializable {
 
     private static final long serialVersionUID = 7920440459872322191L;
 
+    /**
+     * 异步标识(true-异步，false-同步)
+     */
     private Boolean asynLoadingSegment = true;
-
 }

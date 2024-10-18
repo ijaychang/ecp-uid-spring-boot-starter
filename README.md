@@ -78,17 +78,17 @@
      (1)、SegmentServiceImpl 是具体实现类，数据库表结构为(mysql示例)：
 	  DROP TABLE IF EXISTS id_segment;
 	  CREATE TABLE id_segment (
-		biz_tag VARCHAR(64) NOT NULL COMMENT '业务标识',
-		step INT NOT NULL COMMENT '步长',
-		max_id BIGINT NOT NULL COMMENT '最大值',
-		last_update_time DATETIME NOT NULL COMMENT '上次修改时间',
-		current_update_time DATETIME NOT NULL COMMENT '当前修改时间',
+		BIZ_TAG VARCHAR(64) NOT NULL DEFAULT '' COMMENT '业务标识',
+		STEP int NOT NULL COMMENT '步长',
+		MAX_ID BIGINT NOT NULL COMMENT '最大值',
+		LAST_UPDATE_TIME TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上次修改时间',
+		CURRENT_UPDATE_TIME TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '当前修改时间',
 		PRIMARY KEY(BIZ_TAG)
 	  ) COMMENT='号段存储表',ENGINE = INNODB;
-     
+
+     INSERT INTO `id_segment` (`BIZ_TAG`, `STEP`, `MAX_ID`, `LAST_UPDATE_TIME`, `CURRENT_UPDATE_TIME`) VALUES ('', '1', '1', NOW(), NOW());
+
      (2)、支持 同步/异步两种更新数据库方式。可选配置asynLoadingSegment(true-异步，false-同步)，默认使用异步。
-          示例：
-          <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">...</bean>
                     
    4、spring-step 增量ID
       是 基于 segment策略提供给spring 增量实现。非直接使用的策略
