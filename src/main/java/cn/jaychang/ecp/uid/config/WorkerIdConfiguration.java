@@ -26,7 +26,7 @@ public class WorkerIdConfiguration {
         WorkerIdAssigner workerIdAssigner;
         if (WorkerIdAssignerEnum.ZK.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             ZkWorkerIdAssigner zkWorkerIdAssigner = new ZkWorkerIdAssigner();
-            zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddress());
+            zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddr());
             zkWorkerIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
             zkWorkerIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
             zkWorkerIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());

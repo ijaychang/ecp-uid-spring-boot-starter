@@ -2,7 +2,6 @@ package cn.jaychang.ecp.uid.util;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 
 public class NetUtilsTest {
 

@@ -25,7 +25,7 @@ public class TwitterSnowflakeStrategyConfiguration extends WorkerIdConfiguration
     public TwitterSnowflakeStrategy twitterSnowflakeStrategy(TwitterSnowflakeProperties twitterSnowflakeProperties) {
         TwitterSnowflakeStrategy twitterSnowflakeStrategy = new TwitterSnowflakeStrategy();
         twitterSnowflakeStrategy.setDatacenterId(twitterSnowflakeProperties.getDatacenterId());
-        twitterSnowflakeStrategy.setWorkerId(twitterSnowflakeProperties.getWorkId());
+        twitterSnowflakeStrategy.setWorkerId(twitterSnowflakeProperties.getWorkerId());
         if (Objects.nonNull(twitterSnowflakeProperties.getWorkerIdAssigner())) {
             twitterSnowflakeStrategy.setAssigner(workerIdAssigner(twitterSnowflakeProperties));
         }

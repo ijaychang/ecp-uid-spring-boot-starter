@@ -78,11 +78,11 @@
      (1)、SegmentServiceImpl 是具体实现类，数据库表结构为(mysql示例)：
 	  DROP TABLE IF EXISTS id_segment;
 	  CREATE TABLE id_segment (
-		BIZ_TAG VARCHAR(64) NOT NULL COMMENT '业务标识',
-		STEP int NOT NULL COMMENT '步长',
-		MAX_ID BIGINT NOT NULL COMMENT '最大值',
-		LAST_UPDATE_TIME TIMESTAMP NOT NULL COMMENT '上次修改时间',
-		CURRENT_UPDATE_TIME TIMESTAMP NOT NULL COMMENT '当前修改时间',
+		biz_tag VARCHAR(64) NOT NULL COMMENT '业务标识',
+		step INT NOT NULL COMMENT '步长',
+		max_id BIGINT NOT NULL COMMENT '最大值',
+		last_update_time DATETIME NOT NULL COMMENT '上次修改时间',
+		current_update_time DATETIME NOT NULL COMMENT '当前修改时间',
 		PRIMARY KEY(BIZ_TAG)
 	  ) COMMENT='号段存储表',ENGINE = INNODB;
      
@@ -241,3 +241,4 @@ ecp:
       workerIdAssigner: zk
       zkAddr: localhost:2181
 ```
+
