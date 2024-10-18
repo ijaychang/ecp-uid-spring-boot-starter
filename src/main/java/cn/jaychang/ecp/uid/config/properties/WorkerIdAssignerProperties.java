@@ -40,5 +40,5 @@ public class WorkerIdAssignerProperties implements Serializable {
     /**
      * zookeeper address, when workerIdAssigner equals zk, it must be set
      */
-    private String zkAddress = "localhost:2181";
+    private String zkAddr = "localhost:2181";
 }

@@ -26,6 +26,6 @@ public class TwitterSnowflakeProperties extends WorkerIdAssignerProperties imple
     /**
      * 工作节点ID 可不配(如果配了workerIdAssigner，优先使用workerIdAssigner)
      */
-    private Long workId;
+    private Long workerId;
 
 }

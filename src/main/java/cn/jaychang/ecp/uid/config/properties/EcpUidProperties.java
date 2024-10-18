@@ -36,35 +36,32 @@ public class EcpUidProperties implements Serializable {
 
 
     /**
-     * 可选：除余基数，建议使用固定值，不可更改 控制位移
-     */
-    private Integer fixed;
-
-
-    /**
      * 可选：基因因子，如设置则启用混淆
      */
     private Long factor;
 
-
     /**
-     * baidu uid配置
+     * 可选：除余基数，建议使用固定值，不可更改 控制位移
      */
-    private BaiduUidProperties baiduUid;
+    private Integer fixed;
 
     /**
-     * 美团 leaf配置
+     * Spring Step 数据库字段自增方式配置
      */
-    private MeituanLeafProperties meituanLeaf;
+    private SpringStepProperties springStep;
 
     /**
-     * Twitter snowflake配置
+     * Twitter Snowflake 配置
      */
     private TwitterSnowflakeProperties twitterSnowflake;
 
     /**
-     * Spring 数据库字段自增方式配置
+     * Baidu Uid Generator 配置
      */
-    private SpringStepProperties springStep;
+    private BaiduUidProperties baiduUid;
 
+    /**
+     * 美团 Leaf 配置
+     */
+    private MeituanLeafProperties meituanLeaf;
 }

@@ -44,16 +44,113 @@
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
     },
     {
-      "name": "ecp.uid.baidu-uid",
-      "type": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties",
-      "description": "baidu uid 生成策略的配置",
-      "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
-    },
-    {
       "name": "ecp.uid.meituan-leaf",
       "type": "cn.jaychang.ecp.uid.config.properties.MeituanLeafProperties",
       "description": "meituan leaf 生成策略的配置",
       "sourceType": "cn.jaychang.ecp.uid.config.properties.EcpUidProperties"
+    },
+    {
+      "name": "ecp.uid.spring-step.asyn-loading-segment",
+      "type": "java.lang.Boolean",
+      "description": "同步/异步两种更新数据库方式。可选配置asynLoadingSegment(true-异步，false-同步)，默认使用异步",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.SpringStepProperties"
+    },
+    {
+      "name": "ecp.uid.meituan-leaf.asyn-loading-segment",
+      "type": "java.lang.Boolean",
+      "description": "同步/异步两种更新数据库方式。可选配置asynLoadingSegment(true-异步，false-同步)，默认使用异步",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.MeituanLeafProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.worker-id-assigner",
+      "type": "cn.jaychang.ecp.uid.worker.enums.WorkerIdAssignerEnum",
+      "description": "wokerId 分配方式枚举，可选值：zk,db,redis,simple",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.WorkerIdAssignerProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.heartbeat-interval",
+      "type": "java.lang.Long",
+      "description": "heartbeat interval(unit millisecond). default value is 3000ms  (only use zk or redis work id assigner,this field is effective)",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.pid-home",
+      "type": "java.lang.String",
+      "description": "pidHome:workerId file store directory (only use zk or redis work id assigner,this field is effective)",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.pid-port",
+      "type": "java.lang.Integer",
+      "description": "pidPort:heartbeat port (only use zk or redis work id assigner,this field is effective)",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.zk-addr",
+      "type": "java.lang.String",
+      "description": "zookeeper address, when workerIdAssigner equals zk, it must be set",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.datacenter-id",
+      "type": "java.lang.Long",
+      "description": "数据中心ID 可不配",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+    {
+      "name": "ecp.uid.twitter-snowflake.worker-id",
+      "type": "java.lang.String",
+      "description": "工作节点ID 可不配(如果配了workerIdAssigner，优先使用workerIdAssigner)",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.TwitterSnowflakeProperties"
+    },
+
+    {
+      "name": "ecp.uid.baidu-uid.type",
+      "type": "cn.jaychang.ecp.uid.baidu.enums.UidGeneratorTypeEnum",
+      "description": "UID Generator Type,Allow values: default or cache",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.time-bits",
+      "type": "java.lang.Integer",
+      "description": "Bits allocate: delta seconds bits represents delta seconds since a customer epoch(2024-10-15 00:00:00.000), default value:34",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.worker-bits",
+      "type": "java.lang.Integer",
+      "description": "Bits allocate: worker id bits represents the worker's id which assigns based on worker id assigner, default value:16",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.seq-bits",
+      "type": "java.lang.Integer",
+      "description": "Bits allocate: sequence bits represents a sequence within the same second, default value:13",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.epoch-str",
+      "type": "java.lang.String",
+      "description": "Customer epoch, unit as second. For example 2024-10-15 (ms: 1728921600000)",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.boost-power",
+      "type": "java.lang.Integer",
+      "description": "RingBuffer size扩容参数, 可提高UID生成的吞吐量 默认:3， 原bufferSize=8192, 扩容后bufferSize= 8192 << 3 = 65536",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.padding-factor",
+      "type": "java.lang.String",
+      "description": "指定何时向RingBuffer中填充UID, 取值为百分比(0, 100), 默认为50",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
+    },
+    {
+      "name": "ecp.uid.baidu-uid.schedule-interval",
+      "type": "java.lang.Integer",
+      "description": "另外一种RingBuffer填充时机, 在Schedule线程中, 周期性检查填充 默认:不配置此项, 即不实用Schedule线程. 如需使用, 请指定Schedule线程时间间隔, 单位:秒",
+      "sourceType": "cn.jaychang.ecp.uid.config.properties.BaiduUidProperties"
     }
   ],
   "hints": []

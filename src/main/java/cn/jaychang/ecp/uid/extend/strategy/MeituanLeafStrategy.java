@@ -35,7 +35,10 @@ public class MeituanLeafStrategy implements IUidStrategy {
     
     @Autowired
     protected JdbcTemplate jdbcTemplate;
-    
+
+    /**
+     * 同步/异步两种更新数据库方式。可选配置asynLoadingSegment(true-异步，false-同步)，默认使用异步
+     */
     private boolean asynLoadingSegment = true;
     
     /**
