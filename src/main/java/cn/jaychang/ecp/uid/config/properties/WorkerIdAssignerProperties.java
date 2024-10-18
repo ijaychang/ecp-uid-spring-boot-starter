@@ -19,7 +19,7 @@ public class WorkerIdAssignerProperties implements Serializable {
     /**
      * worker id assigner. allow values: zk,db,redis,simple
      */
-    private WorkerIdAssignerEnum workerIdAssigner = WorkerIdAssignerEnum.SIMPLE;
+    private WorkerIdAssignerEnum workerIdAssigner;
 
     /**
      * heartbeat interval(unit millisecond). default value is 3000ms  (only use zk or redis work id assigner,this field is effective)

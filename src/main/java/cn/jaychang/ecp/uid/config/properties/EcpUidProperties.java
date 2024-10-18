@@ -18,18 +18,18 @@ import java.io.Serializable;
 public class EcpUidProperties implements Serializable {
     private static final long serialVersionUID = 1626096582500766485L;
     /**
-     * uid 生成策略 默认 SNOWFLAKE
+     * UID 生成策略 默认 TWITTER_SNOWFLAKE
      * <p>
-     * STEP 步长自增(空实现,依赖数据库步长设置)
+     * SPRING_STEP 步长自增(空实现,依赖数据库步长设置)
      * </p>
      * <p>
-     * SEGMENT 分段批量(基于leaf)
+     * MEITUAN_LEAF 分段批量(基于leaf)
      * </p>
      * <p>
-     * SNOWFLAKE Snowflake算法(源自twitter)
+     * TWITTER_SNOWFLAKE Snowflake算法(源自twitter)
      * </p>
      * <p>
-     * BAIDU 百度UidGenerator
+     * BAIDU_UID 百度UidGenerator
      * </p>
      */
     private String strategy = UidModelEnum.TWITTER_SNOWFLAKE.getName();

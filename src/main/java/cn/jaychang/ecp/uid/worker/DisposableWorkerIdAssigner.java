@@ -5,9 +5,9 @@ import java.util.Random;
 
 import cn.jaychang.ecp.uid.baidu.utils.DockerUtils;
 import cn.jaychang.ecp.uid.worker.dao.WorkerNodeDao;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import cn.jaychang.ecp.uid.util.NetUtils;
@@ -17,11 +17,11 @@ import cn.jaychang.ecp.uid.worker.entity.WorkerNode;
  * DB编号分配器(利用数据库来管理)
  * @author yutianbao
  */
-@AllArgsConstructor
 public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
     private static final Logger LOGGER = LoggerFactory.getLogger(DisposableWorkerIdAssigner.class);
-    
-    private final WorkerNodeDao workerNodeDao;
+
+    @Autowired
+    private WorkerNodeDao workerNodeDao;
 
     /**
      * Assign worker id base on database.<p>
