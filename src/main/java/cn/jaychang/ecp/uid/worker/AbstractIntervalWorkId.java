@@ -74,9 +74,10 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
         throws Exception {
         try {
             /**
-             * 1、检查workId文件是否存在。文件名为ip:port-顺序编号
+             * 1、检查workId文件是否存在。文件名为ip_port_顺序编号
              */
             ServerSocketHolder socketHolder = new ServerSocketHolder();
+            // pidName 格式： ip地址_端口号
             pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
             socket = socketHolder.getServerSocket();
             // 不同端口号 workerId 必须是不同的
@@ -92,6 +93,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             if (null != workerId) {
                 startHeartBeatThread();
                 // 赋值workerId
+                // pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId 格式： /tmp/ecp-uid/pids/ip地址_端口号_workerId
                 WorkerIdUtils.writePidFile(pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId);
             }
         } catch (Exception e) {
@@ -105,7 +107,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
 
     @Override
     public void destroy() throws Exception {
-        // 端口释放放到 bean 销毁的时候，否则同一台机器上，启动多个jvm进程，用的端口号是同一个
+        // bean销毁时，关闭占用的端口
          if (null != socket) {
              if (!socket.isClosed()) {
                  socket.close();

@@ -28,10 +28,13 @@ public class WorkerIdUtils {
      */
     public static final String WORKER_SPLIT = "_";
 
+    /**
+     * 若未指定端口号，默认端口从 53000 开始测试是否有被占用，如果有被占用，则端口号数值加1，直到找到未被占用的端口为止
+     */
     public static final int BEGIN_PID_PORT = 53000;
 
     /**
-     * @方法名称 getPidName
+     * @方法名称 getPidName 格式：ip地址_端口号
      * @功能描述 <pre>获取workId文件名</pre>
      * @param pidPort 使用端口(同机多uid应用时区分端口)
      * @param socketHolder
@@ -42,24 +45,16 @@ public class WorkerIdUtils {
         if (null != pidPort) {
             // 占用端口
             pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort(BEGIN_PID_PORT);
-            try {
-                ServerSocket serverSocket = new ServerSocket(pidPort);
-                socketHolder.setServerSocket(serverSocket);
-            } catch (IOException e) {
-                String errMsg = String.format("端口[%s]占用失败！", pidPort);
-                log.error(errMsg, e);
-                throw new RuntimeException(errMsg);
-            }
         } else {
             pidPort = NetUtils.getAvailablePort(BEGIN_PID_PORT);
-            try {
-                ServerSocket serverSocket = new ServerSocket(pidPort);
-                socketHolder.setServerSocket(serverSocket);
-            } catch (IOException e) {
-                String errMsg = String.format("端口[%s]占用失败！", pidPort);
-                log.error(errMsg, e);
-                throw new RuntimeException(errMsg);
-            }
+        }
+        try {
+            ServerSocket serverSocket = new ServerSocket(pidPort);
+            socketHolder.setServerSocket(serverSocket);
+        } catch (IOException e) {
+            String errMsg = String.format("端口[%s]占用失败！", pidPort);
+            log.error(errMsg, e);
+            throw new RuntimeException(errMsg);
         }
         return pidName + WorkerIdUtils.WORKER_SPLIT + pidPort;
     }
