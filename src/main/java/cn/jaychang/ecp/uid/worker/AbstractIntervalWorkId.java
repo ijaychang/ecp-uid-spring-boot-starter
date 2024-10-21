@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cn.jaychang.ecp.uid.baidu.utils.NamingThreadFactory;
+import cn.jaychang.ecp.uid.util.ServerSocketHolder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -40,7 +41,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     public static final String THREAD_HEARTBEAT_NAME = "ecp_uid_heartbeat";
     
     /**
-     * 心跳原子标识
+     * 心跳是否活跃原子标识
      */
     protected AtomicBoolean active = new AtomicBoolean(false);
     
@@ -62,7 +63,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     /**
      * 使用端口(同机多uid应用时区分端口)
      */
-    private Integer pidPort = -1;
+    private Integer pidPort;
     
     protected String pidName;
     
@@ -73,9 +74,12 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
         throws Exception {
         try {
             /**
-             * 1、检查workId文件是否存在。文件名为ip:port-redis顺序编号
+             * 1、检查workId文件是否存在。文件名为ip:port-顺序编号
              */
-            pidName = WorkerIdUtils.getPidName(pidPort, socket);
+            ServerSocketHolder socketHolder = new ServerSocketHolder();
+            pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
+            socket = socketHolder.getServerSocket();
+            // 不同端口号 workerId 必须是不同的
             workerId = WorkerIdUtils.getPid(pidHome, pidName);
             /**
              * 3、获取本地时间，跟uid 机器节点心跳列表的时间平均值做比较(uid 机器节点心跳列表 用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
@@ -101,8 +105,11 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
 
     @Override
     public void destroy() throws Exception {
+        // 端口释放放到 bean 销毁的时候，否则同一台机器上，启动多个jvm进程，用的端口号是同一个
          if (null != socket) {
-             socket.close();
+             if (!socket.isClosed()) {
+                 socket.close();
+             }
          }
     }
 

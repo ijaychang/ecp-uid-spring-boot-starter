@@ -48,16 +48,17 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
         /**
          * 1、文件不存在，检查redis上是否存在ip:port的机器节点
          */
+        // 按 score 从小到大顺序排列
         Set<Object> uidWork = redisTemplate.opsForZSet().range(UID_FOREVER, 0, -1);
         if (null == workerId) {
             // a、 检查redis上是否存在ip:port的节点,存在，获取节点的顺序编号
             Long i = 0L;
             for (Object item : uidWork) {
-                i++;
                 if (item.toString().equals(pidName)) {
                     workerId = i;
                     break;
                 }
+                i++;
             }
             // b、 不存在，创建ip:port节点
             if (null == workerId) {

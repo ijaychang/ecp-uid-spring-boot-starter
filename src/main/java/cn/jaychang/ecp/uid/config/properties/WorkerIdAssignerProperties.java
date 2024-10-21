@@ -34,7 +34,7 @@ public class WorkerIdAssignerProperties implements Serializable {
     /**
      * pidPort:heartbeat port (only use zk or redis work id assigner,this field is effective)
      */
-    private Integer pidPort = -1;
+    private Integer pidPort;
 
 
     /**
