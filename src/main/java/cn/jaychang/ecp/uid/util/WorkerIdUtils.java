@@ -34,30 +34,6 @@ public class WorkerIdUtils {
      * @方法名称 getPidName
      * @功能描述 <pre>获取workId文件名</pre>
      * @param pidPort 使用端口(同机多uid应用时区分端口)
-     * @param socket 
-     * @return
-     */
-    public static String getPidName(Integer pidPort, ServerSocket socket) {
-        String pidName = NetUtils.getLocalInetAddress().getHostAddress();
-        if (null != pidPort) {
-            // 占用端口
-            pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort();
-            try {
-                socket = new ServerSocket(pidPort);
-            } catch (IOException e) {
-                log.error("端口占用失败！", e);
-                throw new RuntimeException("端口占用失败！");
-            }
-        } else {
-            pidPort = NetUtils.getAvailablePort(BEGIN_PID_PORT);
-        }
-        return pidName + WorkerIdUtils.WORKER_SPLIT + pidPort;
-    }
-
-    /**
-     * @方法名称 getPidName
-     * @功能描述 <pre>获取workId文件名</pre>
-     * @param pidPort 使用端口(同机多uid应用时区分端口)
      * @param socketHolder
      * @return
      */
