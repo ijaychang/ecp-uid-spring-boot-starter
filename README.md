@@ -246,14 +246,13 @@ ecp:
 
 四、补充说明
 -------------------
-多网卡情况下，支持忽略网卡名，或指定IP网段
+多网卡情况下，支持设置忽略网卡名，或指定IP网段
 ```yaml
 ecp:
   uid:
     inetutils:
-      #忽略网卡名
+      #忽略网卡名，有多个的话，用逗号隔开
       #ignoredInterfaces: eth1
+      #指定网段
       preferredNetworks: 10.1.80
-      
-       
 ```
