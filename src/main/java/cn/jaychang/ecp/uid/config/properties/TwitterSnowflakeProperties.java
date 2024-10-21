@@ -13,10 +13,15 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-@ConfigurationProperties(prefix = "ecp.uid.twitter-snowflake")
+@ConfigurationProperties(prefix = TwitterSnowflakeProperties.PREFIX)
 public class TwitterSnowflakeProperties extends WorkerIdAssignerProperties implements Serializable {
 
     private static final long serialVersionUID = -552051843461413001L;
+
+    /**
+     * Prefix for the TwitterSnowflakeProperties.
+     */
+    public static final String PREFIX = "ecp.uid.twitter-snowflake";
 
     /**
      * 数据中心ID 可不配

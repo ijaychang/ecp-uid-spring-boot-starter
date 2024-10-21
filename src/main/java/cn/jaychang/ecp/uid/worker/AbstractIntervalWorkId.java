@@ -2,17 +2,22 @@ package cn.jaychang.ecp.uid.worker;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import cn.jaychang.ecp.uid.baidu.utils.NamingThreadFactory;
+import cn.jaychang.ecp.uid.config.properties.InetUtilsProperties;
 import cn.jaychang.ecp.uid.util.ServerSocketHolder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import cn.jaychang.ecp.uid.util.WorkerIdUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @类名称 AbstractIntervalWorkId.java
@@ -29,7 +34,7 @@ import cn.jaychang.ecp.uid.util.WorkerIdUtils;
  *     ----------------------------------------------
  * </pre>
  */
-public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean, DisposableBean {
+public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean, DisposableBean, ApplicationContextAware {
     /**
      * 本地workid文件跟目录
      */
@@ -68,6 +73,8 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     protected String pidName;
     
     protected ServerSocket socket;
+
+    protected ApplicationContext applicationContext;
     
     @Override
     public void afterPropertiesSet()
@@ -78,7 +85,14 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
              */
             ServerSocketHolder socketHolder = new ServerSocketHolder();
             // pidName 格式： ip地址_端口号
-            pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
+            InetUtilsProperties inetUtilsProperties = applicationContext.getBean(InetUtilsProperties.class);
+            if (Objects.nonNull(inetUtilsProperties)
+                    && (!CollectionUtils.isEmpty(inetUtilsProperties.getIgnoredInterfaces())
+                    || !CollectionUtils.isEmpty(inetUtilsProperties.getPreferredNetworks()))) {
+                pidName = WorkerIdUtils.getPidName(pidPort, socketHolder, inetUtilsProperties);
+            } else {
+                pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
+            }
             socket = socketHolder.getServerSocket();
             // 不同端口号 workerId 必须是不同的
             workerId = WorkerIdUtils.getPid(pidHome, pidName);
@@ -177,5 +191,10 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     
     public void setPidPort(Integer pidPort) {
         this.pidPort = pidPort;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

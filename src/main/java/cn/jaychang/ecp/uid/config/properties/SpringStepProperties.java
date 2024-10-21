@@ -13,8 +13,13 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-@ConfigurationProperties(prefix = "ecp.uid.spring-step")
+@ConfigurationProperties(prefix = SpringStepProperties.PREFIX)
 public class SpringStepProperties extends MeituanLeafProperties implements Serializable {
 
     private static final long serialVersionUID = 4414114365097978569L;
+
+    /**
+     * Prefix for the BaiduUidProperties.
+     */
+    public static final String PREFIX = "ecp.uid.spring-step";
 }

@@ -2,6 +2,7 @@ package cn.jaychang.ecp.uid.config;
 
 import cn.jaychang.ecp.uid.UidContext;
 import cn.jaychang.ecp.uid.config.properties.EcpUidProperties;
+import cn.jaychang.ecp.uid.config.properties.InetUtilsProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,14 +18,13 @@ import org.springframework.context.annotation.Import;
  */
 @Slf4j
 @Configuration
-@EnableConfigurationProperties({EcpUidProperties.class})
+@EnableConfigurationProperties({EcpUidProperties.class, InetUtilsProperties.class})
 @Import({SpringStepStrategyConfiguration.class, TwitterSnowflakeStrategyConfiguration.class, BaiduUidStrategyConfiguration.class, MeituanLeafStrategyConfiguration.class})
 @AllArgsConstructor
 public class EcpUidAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public UidContext uidContext() {
-        UidContext uidContext = new UidContext();
-        return uidContext;
+        return new UidContext();
     }
 }

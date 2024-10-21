@@ -14,11 +14,15 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-@ConfigurationProperties(prefix = "ecp.uid.baidu-uid")
+@ConfigurationProperties(prefix = BaiduUidProperties.PREFIX)
 public class BaiduUidProperties extends WorkerIdAssignerProperties implements Serializable {
 
     private static final long serialVersionUID = 5040536433413671208L;
 
+    /**
+     * Prefix for the BaiduUidProperties.
+     */
+    public static final String PREFIX = "ecp.uid.baidu-uid";
 
     /**
      * UID Generator Type

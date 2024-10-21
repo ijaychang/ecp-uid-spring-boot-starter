@@ -242,3 +242,18 @@ ecp:
       zkAddr: localhost:2181
 ```
 
+
+
+四、补充说明
+-------------------
+多网卡情况下，支持忽略网卡名，或指定IP网段
+```yaml
+ecp:
+  uid:
+    inetutils:
+      #忽略网卡名
+      #ignoredInterfaces: eth1
+      preferredNetworks: 10.1.80
+      
+       
+```

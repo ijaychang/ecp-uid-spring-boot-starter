@@ -14,9 +14,15 @@ import java.io.Serializable;
  */
 @Data
 @Accessors(chain = true)
-@ConfigurationProperties(prefix = "ecp.uid")
+@ConfigurationProperties(prefix = EcpUidProperties.PREFIX)
 public class EcpUidProperties implements Serializable {
     private static final long serialVersionUID = 1626096582500766485L;
+
+    /**
+     * Prefix for the EcpUidProperties.
+     */
+    public static final String PREFIX = "ecp.uid";
+
     /**
      * UID 生成策略 默认 TWITTER_SNOWFLAKE
      * <p>

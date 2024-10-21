@@ -1,10 +1,12 @@
 package cn.jaychang.ecp.uid.util;
 
+import cn.jaychang.ecp.uid.config.properties.InetUtilsProperties;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.List;
 
 /**
  * @类名称 WorkerIdUtils.java
@@ -42,6 +44,34 @@ public class WorkerIdUtils {
      */
     public static String getPidName(Integer pidPort, ServerSocketHolder socketHolder) {
         String pidName = NetUtils.getLocalInetAddress().getHostAddress();
+        if (null != pidPort) {
+            // 占用端口
+            pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort(BEGIN_PID_PORT);
+        } else {
+            pidPort = NetUtils.getAvailablePort(BEGIN_PID_PORT);
+        }
+        try {
+            ServerSocket serverSocket = new ServerSocket(pidPort);
+            socketHolder.setServerSocket(serverSocket);
+        } catch (IOException e) {
+            String errMsg = String.format("端口[%s]占用失败！", pidPort);
+            log.error(errMsg, e);
+            throw new RuntimeException(errMsg);
+        }
+        return pidName + WorkerIdUtils.WORKER_SPLIT + pidPort;
+    }
+
+    /**
+     * @方法名称 getPidName 格式：ip地址_端口号
+     * @功能描述 <pre>获取workId文件名</pre>
+     * @param pidPort 使用端口(同机多uid应用时区分端口)
+     * @param socketHolder
+     * @param inetUtilsProperties
+     * @return
+     */
+    public static String getPidName(Integer pidPort, ServerSocketHolder socketHolder, InetUtilsProperties inetUtilsProperties) {
+        InetUtils inetUtils = new InetUtils(inetUtilsProperties);
+        String pidName = inetUtils.findFirstNonLoopbackAddress().getHostAddress();
         if (null != pidPort) {
             // 占用端口
             pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort(BEGIN_PID_PORT);
