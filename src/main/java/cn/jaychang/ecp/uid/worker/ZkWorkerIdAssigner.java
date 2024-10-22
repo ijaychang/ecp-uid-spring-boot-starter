@@ -118,8 +118,8 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
              * 3、创建临时节点
              */
             String temporaryPath = ZK_SPLIT + UID_TEMPORARY;
-            String uidTemporaryPath = temporaryPath + ZK_SPLIT + workerId + UNDERLINE;
-            temporaryNode = zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(uidTemporaryPath, longToBytes(System.currentTimeMillis()));
+            String uidTemporaryPath = temporaryPath + ZK_SPLIT + pidName;
+            temporaryNode = zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(uidTemporaryPath, longToBytes(System.currentTimeMillis()));
             if (StringUtils.hasText(temporaryNode)) {
                 log.debug("用于给workerId[{}]定时上报时间戳的临时节点[{}]创建成功", workerId, temporaryNode);
             }
