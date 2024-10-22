@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cn.jaychang.ecp.uid.baidu.utils.NamingThreadFactory;
 import cn.jaychang.ecp.uid.config.properties.InetUtilsProperties;
 import cn.jaychang.ecp.uid.util.ServerSocketHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -34,6 +35,7 @@ import org.springframework.util.CollectionUtils;
  *     ----------------------------------------------
  * </pre>
  */
+@Slf4j
 public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean, DisposableBean, ApplicationContextAware {
     /**
      * 本地workid文件跟目录
@@ -61,7 +63,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     protected String pidHome = PID_ROOT;
     
     /**
-     * 因子ID
+     * 工作节点ID (可理解为一个运行的Java应用，需要给这个应用分配一个ID)
      */
     protected Long workerId;
     
@@ -69,9 +71,15 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
      * 使用端口(同机多uid应用时区分端口)
      */
     private Integer pidPort;
-    
+
+    /**
+     * ip地址_端口号
+     */
     protected String pidName;
-    
+
+    /**
+     * 需要占用的端口
+     */
     protected ServerSocket socket;
 
     protected ApplicationContext applicationContext;
@@ -94,6 +102,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
                 pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
             }
             socket = socketHolder.getServerSocket();
+            pidPort = socket.getLocalPort();
             // 不同端口号 workerId 必须是不同的
             workerId = WorkerIdUtils.getPid(pidHome, pidName);
             /**
@@ -125,6 +134,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
          if (null != socket) {
              if (!socket.isClosed()) {
                  socket.close();
+                 log.debug("已关闭socket端口[{}]", pidPort);
              }
          }
     }

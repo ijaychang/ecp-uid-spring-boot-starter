@@ -205,11 +205,11 @@ public class SegmentServiceImpl implements ISegmentService {
                 currentMaxId = rs.getLong("max_id");
                 Date lastUpdateTime = new Date();
                 if (rs.getTimestamp("last_update_time") != null) {
-                    lastUpdateTime = (java.util.Date)rs.getTimestamp("last_update_time");
+                    lastUpdateTime = rs.getTimestamp("last_update_time");
                 }
                 Date currentUpdateTime = new Date();
                 if (rs.getTimestamp("current_update_time") != null) {
-                    currentUpdateTime = (java.util.Date)rs.getTimestamp("current_update_time");
+                    currentUpdateTime = rs.getTimestamp("current_update_time");
                 }
                 currentSegment.setStep(step);
                 currentSegment.setMaxId(currentMaxId);

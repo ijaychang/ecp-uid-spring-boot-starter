@@ -1,16 +1,18 @@
 package cn.jaychang.ecp.uid.worker;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.*;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
-
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
+import java.util.Objects;
 
 /**
  * @类名称 ZkWorkerIdAssigner.java
@@ -26,51 +28,50 @@ import org.apache.zookeeper.data.Stat;
  *     1.0.0 	庄梦蝶殇 	2018年04月27日             利用zk的版本实现workid
  *     2.0.0    庄梦蝶殇      2018年09月04日             引入leaf的理念基于zkclient进行开发
  *     2.1.0    庄梦蝶殇      2019年03月27日             使用原生Zookeeper。去除zkclient依赖
+ *     2.1.1    jaychang    2024年10月22日              使用Curator
  *     ----------------------------------------------
  * </pre>
  */
+@Slf4j
 public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     public static final String ZK_SPLIT = "/";
-    
+
+    public static final String UNDERLINE = "_";
+
     /**
      * ZK上uid根目录
      */
-    public static final String UID_ROOT = "/ecp-uid";
+    public static final String UID_ROOT = "ecp-uid";
     
     /**
      * 持久顺序节点根目录(用于保存节点的顺序编号)
      */
-    public static final String UID_FOREVER = UID_ROOT.concat("/forever");
+    public static final String UID_FOREVER = "forever";
     
     /**
      * 临时节点根目录(用于保存活跃节点及活跃心跳)
      */
-    public static final String UID_TEMPORARY = UID_ROOT.concat("/temporary");
-    
-    /**
-     * 本地workid文件跟目录
-     */
-    public static final String PID_ROOT = "/data/pids/";
-    
+    public static final String UID_TEMPORARY = "temporary";
+
     /**
      * session失效时间
      */
-    public static final int SESSION_TIMEOUT = 3000;
+    public static final int SESSION_TIMEOUT = Integer.getInteger("curator-default-session-timeout", 60 * 1000);;
     
     /**
      * connection连接时间
      */
-    public static final int CONNECTION_TIMEOUT = 30000;
+    public static final int CONNECTION_TIMEOUT = Integer.getInteger("curator-default-connection-timeout", 15 * 1000);
     
     /**
      * zk客户端
      */
-    private ZooKeeper zkClient;
+    private CuratorFramework zkClient;
     
     /**
      * zk注册地址
      */
-    private String zkAddress = "127.0.0.1:2181";
+    private String zkAddress = "localhost:2181";
     
     /**
      * 临时节点名，用于上报时间使用
@@ -80,27 +81,27 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     @Override
     public long action() {
         try {
-            zkClient = new ZooKeeper(zkAddress, SESSION_TIMEOUT, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                    
-                }
-            });
-            if (null == zkClient.exists(UID_ROOT, false)) {
-                zkClient.create(UID_ROOT, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+
+            zkClient = CuratorFrameworkFactory.builder().connectString(this.zkAddress)
+                    .sessionTimeoutMs(SESSION_TIMEOUT).connectionTimeoutMs(CONNECTION_TIMEOUT).retryPolicy(retryPolicy)
+                    .namespace(UID_ROOT).build();
+            zkClient.start();
+
+            // 是否存在 /ecp-uid/forever 目录，没有则创建
+            String uidForeverPath = ZK_SPLIT + UID_FOREVER;
+            if (null == zkClient.checkExists().forPath(uidForeverPath)) {
+                zkClient.create().withMode(CreateMode.PERSISTENT).forPath(uidForeverPath);
             }
-            String workNode = UID_FOREVER + ZK_SPLIT + pidName;
+            // 格式举例： /forever/192.168.56.1_53001_
+            String workNode = uidForeverPath + ZK_SPLIT + pidName + UNDERLINE;
             
             /**
              * 2、文件不存在，检查zk上是否存在ip:port的节点
              */
-            if (null == zkClient.exists(UID_FOREVER, false)) {
-                zkClient.create(UID_FOREVER, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-            }
-            if (null == workerId || null != zkClient.exists(workNode, false)) {
-                // a、 检查zk上是否存在ip:port的节点,存在，获取节点的顺序编号
-                List<String> uidWork = zkClient.getChildren(UID_FOREVER, false);
-                for (String nodePath : uidWork) {
+            if (null == workerId || null != zkClient.checkExists().forPath(workNode)) {
+                List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
+                for (String nodePath : seqNodePaths) {
                     if (nodePath.startsWith(pidName)) {
                         workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
                         break;
@@ -108,7 +109,7 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                 }
                 // b、 不存在，创建ip:port节点
                 if (null == workerId) {
-                    String nodePath = zkClient.create(workNode, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+                    String nodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode);
                     workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
                 }
             }
@@ -116,25 +117,38 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
             /**
              * 3、创建临时节点
              */
-            if (null == zkClient.exists(UID_TEMPORARY, false)) {
-                zkClient.create(UID_TEMPORARY, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            String temporaryPath = ZK_SPLIT + UID_TEMPORARY;
+            String uidTemporaryPath = temporaryPath + ZK_SPLIT + workerId + UNDERLINE;
+            temporaryNode = zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(uidTemporaryPath, longToBytes(System.currentTimeMillis()));
+            if (StringUtils.hasText(temporaryNode)) {
+                log.debug("用于给workerId[{}]定时上报时间戳的临时节点[{}]创建成功", workerId, temporaryNode);
             }
-            
-            temporaryNode = zkClient.create(UID_TEMPORARY + ZK_SPLIT + workerId, longToBytes(System.currentTimeMillis()), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
             active.set(true);
             
             /**
              * 4、获取本地时间，跟zk临时节点列表的时间平均值做比较(zk临时节点用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
              */
-            List<String> activeNodes = zkClient.getChildren(UID_TEMPORARY, false);
+            List<String> activeNodes = zkClient.getChildren().forPath(temporaryPath);
             Long sumTime = 0L;
+            if (CollectionUtils.isEmpty(activeNodes)) {
+                return sumTime;
+            }
             for (String itemNode : activeNodes) {
-                Long nodeTime = bytesToLong(zkClient.getData(UID_TEMPORARY + ZK_SPLIT + itemNode, false, new Stat()));
+                Long nodeTime = bytesToLong(zkClient.getData().forPath(temporaryPath + ZK_SPLIT + itemNode));
                 sumTime += nodeTime;
             }
             return sumTime / activeNodes.size();
         } catch (KeeperException | InterruptedException | IOException e) {
-            e.printStackTrace();
+            log.error("zk初始化节点或上报时间戳失败", e);
+        } catch (Exception e) {
+            log.error("zk初始化节点或上报时间戳失败", e);
+        } finally {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (Objects.nonNull(zkClient)) {
+                    zkClient.close();
+                    log.debug("已关闭zkClient");
+                }
+            }));
         }
         return System.currentTimeMillis();
     }
@@ -146,10 +160,14 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     
     @Override
     public void report() {
+        long currentTimeMillis = System.currentTimeMillis();
         try {
-            zkClient.setData(temporaryNode, longToBytes(System.currentTimeMillis()), -1);
+            zkClient.setData().forPath(temporaryNode, longToBytes(currentTimeMillis)).setVersion(-1);
+            log.debug("workerId[{}]完成定时上报时间戳[{}]至[{}]节点", workerId, currentTimeMillis, temporaryNode);
         } catch (KeeperException | InterruptedException e) {
-            e.printStackTrace();
+            log.error(String.format("workerId[{}]定时上报时间戳[{}]至[{}]节点失败", workerId, currentTimeMillis, temporaryNode), e);
+        } catch (Exception e) {
+            log.error(String.format("workerId[{}]定时上报时间戳[{}]至[{}]节点失败", workerId, currentTimeMillis, temporaryNode), e);
         }
     }
     
@@ -160,7 +178,8 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     public void setZkAddress(String zkAddress) {
         this.zkAddress = zkAddress;
     }
-    
+
+    /** 分配8个字节(刚好可以存储Long类型的时间戳)的缓冲区 */
     private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
     
     public static byte[] longToBytes(long x) {
@@ -169,6 +188,7 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     }
     
     public static long bytesToLong(byte[] bytes) {
+        buffer.clear();
         buffer.put(bytes, 0, bytes.length);
         buffer.flip();// need flip
         return buffer.getLong();

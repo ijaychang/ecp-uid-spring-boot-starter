@@ -20,7 +20,7 @@
 		<spring-boot.version>2.3.12.RELEASE</spring-boot.version>
 		<fastjson.version>1.2.83</fastjson.version>
 		<mysql.version>5.1.49</mysql.version>
-		<zk.version>3.5.10</zk.version>
+		<curator.version>4.3.0</curator.version>
 		<groboutils-core.version>5</groboutils-core.version>
 
 		<!-- Maven plugins -->
@@ -87,7 +87,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- slf4j -->
+		<!-- Slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -109,26 +109,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <optional>true</optional>
         </dependency>
-        
+
+		<!-- Zookeeper Client -->
 		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>${zk.version}</version>
-            <optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-log4j12</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.apache.curator</groupId>
+			<artifactId>curator-framework</artifactId>
+			<version>${curator.version}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -156,6 +143,7 @@
 			<version>${fastjson.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- Junit 多线程测试 -->
 		<dependency>
 			<groupId>net.sourceforge.groboutils</groupId>
@@ -168,7 +156,7 @@
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+	</dependencies>
 
 	<distributionManagement>
 		<snapshotRepository>
