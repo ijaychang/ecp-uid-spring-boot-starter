@@ -110,45 +110,50 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                 List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
                 for (String nodePath : seqNodePaths) {
                     if (nodePath.startsWith(pidName)) {
+                        // nodePath 是不完整的路径，所以需要拼接上 uidForeverPath
                         foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
                         workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
                         break;
                     }
                 }
-                // b、 不存在，创建ip:port节点
+                // zk上不存在对应ip_port的持久顺序节点，则创建ip_port持久顺序节点
                 if (null == workerId) {
                     // 这里创建创建完成返回的nodePath是完整路径
-                    String nodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
-                    foreverNode = nodePath;
-                    workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
+                    String createdNodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
+                    foreverNode = createdNodePath;
+                    workerId = Long.valueOf(createdNodePath.substring(createdNodePath.length() - 10));
                 }
             } else {
                 List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
                 for (String nodePath : seqNodePaths) {
-                    if (nodePath.startsWith(pidName)) {
-                        foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
-                        Long zkWorkerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
-                        if (!workerId.equals(zkWorkerId)) {
-                            log.warn("本地文件的workerId[{}]与zk上的workerId[{}]不一致，以zk上的workerId为准", workerId, zkWorkerId);
-                            // 删除现在的workerId本地文件，重新创建workerId本地文件
-                            String oldWorkerIdFileName = pidHome + pidName + UNDERLINE + workerId;
-                            File oldWorkerIdFile = new File(oldWorkerIdFileName);
-                            if (oldWorkerIdFile.delete()) {
-                                log.debug("删除[{}]成功", oldWorkerIdFileName);
-                                String newWorkerIdFileName = pidHome + pidName + UNDERLINE + zkWorkerId;
-                                File newWorkerIdFile = new File(newWorkerIdFileName);
-                                if(newWorkerIdFile.createNewFile()) {
-                                    log.debug("创建[{}]成功", newWorkerIdFileName);
-                                } else {
-                                    throw new RuntimeException(String.format("创建[%s]失败", newWorkerIdFileName));
-                                }
-                                workerId = zkWorkerId;
-                            } else {
-                                throw new RuntimeException(String.format("删除[%s]失败", oldWorkerIdFileName));
-                            }
-                        }
+                    if (!nodePath.startsWith(pidName)) {
+                        continue;
+                    }
+                    // nodePath 是不完整的路径，所以需要拼接上 uidForeverPath
+                    foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
+                    Long zkWorkerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
+                    if (workerId.equals(zkWorkerId)) {
                         break;
                     }
+                    log.warn("本地文件的workerId[{}]与zk上的workerId[{}]不一致，以zk上的workerId为准", workerId, zkWorkerId);
+                    // 删除现在的workerId本地文件，重新创建workerId本地文件
+                    String oldWorkerIdFileName = pidHome + pidName + UNDERLINE + workerId;
+                    File oldWorkerIdFile = new File(oldWorkerIdFileName);
+                    if (!oldWorkerIdFile.delete()) {
+                        throw new RuntimeException(String.format("删除[%s]失败", oldWorkerIdFileName));
+                    }
+                    log.debug("删除[{}]成功", oldWorkerIdFileName);
+                    String newWorkerIdFileName = pidHome + pidName + UNDERLINE + zkWorkerId;
+                    File newWorkerIdFile = new File(newWorkerIdFileName);
+                    if (newWorkerIdFile.exists()) {
+                        break;
+                    }
+                    if (!newWorkerIdFile.createNewFile()) {
+                        throw new RuntimeException(String.format("创建[%s]失败", newWorkerIdFileName));
+                    }
+                    log.debug("创建[{}]成功", newWorkerIdFileName);
+                    // 订正workerId的值 (一般情况不会发生，除非手工改文件名)
+                    workerId = zkWorkerId;
                 }
             }
             
@@ -157,7 +162,9 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
              */
             String temporaryPath = ZK_SPLIT + UID_TEMPORARY;
             String uidTemporaryPath = temporaryPath + ZK_SPLIT + pidName;
-            temporaryNode = zkClient.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(uidTemporaryPath, longToBytes(System.currentTimeMillis()));
+            if (null == zkClient.checkExists().creatingParentsIfNeeded().forPath(uidTemporaryPath)) {
+                temporaryNode = zkClient.create().withMode(CreateMode.EPHEMERAL).forPath(uidTemporaryPath, longToBytes(System.currentTimeMillis()));
+            }
             if (StringUtils.hasText(temporaryNode)) {
                 log.debug("用于给workerId[{}]定时上报时间戳的临时节点[{}]创建成功", workerId, temporaryNode);
             }
@@ -182,10 +189,11 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
             // zk临时节点列表的时间戳平均值若大于指定workerId持久节点的时间戳值，则返回时间戳平均值，否则返回workerId持久节点的时间戳值
             return averageTime > latestTimestamp ? averageTime : latestTimestamp;
         } catch (KeeperException | InterruptedException | IOException e) {
-            log.error("zk初始化节点或上报时间戳失败", e);
+            log.error("zk初始化节点、或获取临时节点时间戳平均值，或上报时间戳至zk节点失败", e);
         } catch (Exception e) {
-            log.error("zk初始化节点或上报时间戳失败", e);
+            log.error("zk初始化节点、或获取临时节点时间戳平均值，或上报时间戳至zk节点失败", e);
         } finally {
+            // 注册钩子函数，当应用shutdown时，关闭zkClient
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (Objects.nonNull(zkClient)) {
                     zkClient.close();
@@ -193,7 +201,8 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                 }
             }));
         }
-        return System.currentTimeMillis();
+        // 这里不能返回当前应用的时间戳，否则会出现时间回拨，而是应该抛出异常
+        throw new RuntimeException("获取临时节点时间戳平均值，或持久顺序节点的时间戳失败");
     }
     
     @Override
