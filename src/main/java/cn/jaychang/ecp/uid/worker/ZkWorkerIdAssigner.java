@@ -215,7 +215,11 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
         long currentTimeMillis = System.currentTimeMillis();
         try {
             byte[] longToBytes = longToBytes(currentTimeMillis);
-            zkClient.setData().forPath(temporaryNode, longToBytes).setVersion(-1);
+            if (null == zkClient.checkExists().forPath(temporaryNode)) {
+                zkClient.create().withMode(CreateMode.EPHEMERAL).forPath(temporaryNode, longToBytes(currentTimeMillis));
+            } else {
+                zkClient.setData().forPath(temporaryNode, longToBytes).setVersion(-1);
+            }
             zkClient.setData().forPath(foreverNode, longToBytes).setVersion(-1);
             log.debug("workerId[{}]完成定时上报时间戳[{}]至节点[{}]和[{}]", workerId, currentTimeMillis, temporaryNode, foreverNode);
         } catch (KeeperException | InterruptedException e) {
