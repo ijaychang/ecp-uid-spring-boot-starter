@@ -9,6 +9,7 @@ import org.apache.zookeeper.*;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -77,6 +78,12 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
      * 临时节点名，用于上报时间使用
      */
     private String temporaryNode;
+
+
+    /**
+     * 持久节点名
+     */
+    private String foreverNode;
     
     @Override
     public long action() {
@@ -99,18 +106,49 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
             /**
              * 2、文件不存在，检查zk上是否存在ip:port的节点
              */
-            if (null == workerId || null != zkClient.checkExists().forPath(workNode)) {
+            if (null == workerId) {
                 List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
                 for (String nodePath : seqNodePaths) {
                     if (nodePath.startsWith(pidName)) {
+                        foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
                         workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
                         break;
                     }
                 }
                 // b、 不存在，创建ip:port节点
                 if (null == workerId) {
-                    String nodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode);
+                    // 这里创建创建完成返回的nodePath是完整路径
+                    String nodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
+                    foreverNode = nodePath;
                     workerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
+                }
+            } else {
+                List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
+                for (String nodePath : seqNodePaths) {
+                    if (nodePath.startsWith(pidName)) {
+                        foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
+                        Long zkWorkerId = Long.valueOf(nodePath.substring(nodePath.length() - 10));
+                        if (!workerId.equals(zkWorkerId)) {
+                            log.warn("本地文件的workerId[{}]与zk上的workerId[{}]不一致，以zk上的workerId为准", workerId, zkWorkerId);
+                            // 删除现在的workerId本地文件，重新创建workerId本地文件
+                            String oldWorkerIdFileName = pidHome + pidName + UNDERLINE + workerId;
+                            File oldWorkerIdFile = new File(oldWorkerIdFileName);
+                            if (oldWorkerIdFile.delete()) {
+                                log.debug("删除[{}]成功", oldWorkerIdFileName);
+                                String newWorkerIdFileName = pidHome + pidName + UNDERLINE + zkWorkerId;
+                                File newWorkerIdFile = new File(newWorkerIdFileName);
+                                if(newWorkerIdFile.createNewFile()) {
+                                    log.debug("创建[{}]成功", newWorkerIdFileName);
+                                } else {
+                                    throw new RuntimeException(String.format("创建[%s]失败", newWorkerIdFileName));
+                                }
+                                workerId = zkWorkerId;
+                            } else {
+                                throw new RuntimeException(String.format("删除[%s]失败", oldWorkerIdFileName));
+                            }
+                        }
+                        break;
+                    }
                 }
             }
             
@@ -129,15 +167,20 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
              * 4、获取本地时间，跟zk临时节点列表的时间平均值做比较(zk临时节点用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
              */
             List<String> activeNodes = zkClient.getChildren().forPath(temporaryPath);
-            Long sumTime = 0L;
+
+            // 持久节点上的时间戳 (临时节点全部消失后，临时节点的时间戳就没有了)，为了保证不会发生时钟回拨，可以从持久节点上获取上报的最新时间戳
+            long latestTimestamp = bytesToLong(zkClient.getData().forPath(foreverNode));
             if (CollectionUtils.isEmpty(activeNodes)) {
-                return sumTime;
+                return latestTimestamp;
             }
+            Long sumTime = 0L;
             for (String itemNode : activeNodes) {
                 Long nodeTime = bytesToLong(zkClient.getData().forPath(temporaryPath + ZK_SPLIT + itemNode));
                 sumTime += nodeTime;
             }
-            return sumTime / activeNodes.size();
+            long averageTime = sumTime / activeNodes.size();
+            // zk临时节点列表的时间戳平均值若大于指定workerId持久节点的时间戳值，则返回时间戳平均值，否则返回workerId持久节点的时间戳值
+            return averageTime > latestTimestamp ? averageTime : latestTimestamp;
         } catch (KeeperException | InterruptedException | IOException e) {
             log.error("zk初始化节点或上报时间戳失败", e);
         } catch (Exception e) {
@@ -162,12 +205,14 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     public void report() {
         long currentTimeMillis = System.currentTimeMillis();
         try {
-            zkClient.setData().forPath(temporaryNode, longToBytes(currentTimeMillis)).setVersion(-1);
-            log.debug("workerId[{}]完成定时上报时间戳[{}]至[{}]节点", workerId, currentTimeMillis, temporaryNode);
+            byte[] longToBytes = longToBytes(currentTimeMillis);
+            zkClient.setData().forPath(temporaryNode, longToBytes).setVersion(-1);
+            zkClient.setData().forPath(foreverNode, longToBytes).setVersion(-1);
+            log.debug("workerId[{}]完成定时上报时间戳[{}]至节点[{}]和[{}]", workerId, currentTimeMillis, temporaryNode, foreverNode);
         } catch (KeeperException | InterruptedException e) {
-            log.error(String.format("workerId[{}]定时上报时间戳[{}]至[{}]节点失败", workerId, currentTimeMillis, temporaryNode), e);
+            log.error(String.format("workerId[%s]定时上报时间戳[%s]至[%s]和[%s]节点失败", workerId, currentTimeMillis, temporaryNode, foreverNode), e);
         } catch (Exception e) {
-            log.error(String.format("workerId[{}]定时上报时间戳[{}]至[{}]节点失败", workerId, currentTimeMillis, temporaryNode), e);
+            log.error(String.format("workerId[%s]定时上报时间戳[%s]至[%s]和[%s]节点失败", workerId, currentTimeMillis, temporaryNode, foreverNode), e);
         }
     }
     
