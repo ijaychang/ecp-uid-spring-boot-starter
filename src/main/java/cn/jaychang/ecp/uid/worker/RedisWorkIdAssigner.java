@@ -1,11 +1,13 @@
 package cn.jaychang.ecp.uid.worker;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @类名称 RedisWorkIdAssigner.java
@@ -78,14 +80,17 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
          * 3、获取本地时间，跟uid 活跃节点心跳列表的时间平均值做比较(uid 活跃节点心跳列表 用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
          */
         Long sumTime = 0L;
-        if (null != uidWork && uidWork.size() > 0) {
-            for (Object itemName : uidWork) {
-                Object itemTime = redisTemplate.opsForValue().get(UID_TEMPORARY + itemName);
-                sumTime += null == itemTime ? 0 : Long.valueOf(itemTime.toString());
-            }
-            return sumTime / uidWork.size();
+        Double lastTimeMillisDouble = redisTemplate.opsForZSet().score(UID_FOREVER, pidName);
+        long lastTimeMillis = lastTimeMillisDouble.longValue();
+        if (CollectionUtils.isEmpty(uidWork)) {
+            return lastTimeMillis;
         }
-        return 0;
+        for (Object itemName : uidWork) {
+            Object itemTime = redisTemplate.opsForValue().get(UID_TEMPORARY + itemName);
+            sumTime += null == itemTime ? 0 : Long.valueOf(itemTime.toString());
+        }
+        long averageTime = sumTime / uidWork.size();
+        return averageTime > lastTimeMillis ? averageTime : lastTimeMillis;
     }
     
     @Override
@@ -95,6 +100,9 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     
     @Override
     public void report() {
-        redisTemplate.opsForValue().set(UID_TEMPORARY + pidName, System.currentTimeMillis(), interval * 3, TimeUnit.MILLISECONDS);
+        long currentTimeMillis = System.currentTimeMillis();
+        redisTemplate.opsForValue().set(UID_TEMPORARY + pidName, currentTimeMillis, interval * 3, TimeUnit.MILLISECONDS);
+        Double lastTimeMillis = redisTemplate.opsForZSet().score(UID_FOREVER, pidName);
+        redisTemplate.opsForZSet().incrementScore(UID_FOREVER, pidName, new BigDecimal(currentTimeMillis).min(new BigDecimal(lastTimeMillis)).doubleValue());
     }
 }
