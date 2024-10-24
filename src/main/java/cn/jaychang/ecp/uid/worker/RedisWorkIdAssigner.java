@@ -2,13 +2,11 @@ package cn.jaychang.ecp.uid.worker;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @类名称 RedisWorkIdAssigner.java
@@ -38,10 +36,6 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
      */
     public static final String UID_FOREVER = UID_ROOT.concat("forever");
     
-    /**
-     * uid 活跃节点心跳列表(用于保存活跃节点及活跃心跳)
-     */
-    public static final String UID_TEMPORARY = UID_ROOT.concat("temporary:");
 
     @Autowired
     @Qualifier("redisTemplateForWorkIdAssigner")
@@ -50,12 +44,12 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     @Override
     public long action() {
         /**
-         * 1、文件不存在，检查redis上是否存在ip:port的机器节点
+         * 文件不存在，检查redis上是否存在ip:port的机器节点
          */
         // 按 score 从小到大顺序排列
         Set<Object> uidWorkSet = redisTemplate.opsForZSet().range(UID_FOREVER, 0, -1);
         if (null == workerId) {
-            // a、 检查redis上是否存在ip:port的节点,存在，获取节点的顺序编号
+            // 检查redis上是否存在ip_port的节点,存在，获取节点的顺序编号
             Long i = 0L;
             for (Object item : uidWorkSet) {
                 if (item.toString().equals(pidName)) {
@@ -64,45 +58,51 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
                 }
                 i++;
             }
-            // b、 不存在，创建ip:port节点
+            // workerId 不存在，创建ip_port节点
             if (null == workerId) {
                 workerId = (long)uidWorkSet.size();
-                // 使用zset 时间排序，保证有序性
                 redisTemplate.opsForZSet().add(UID_FOREVER, pidName, System.currentTimeMillis());
                 uidWorkSet.add(pidName);
             }
+        } else {
+            // 本地文件已有记录workerId的文件，校验下与zk上记录的workerId是否一致(如果非人为修改，肯定是一致的)，校验下的话，保险一点
+            Long remoteWorkerId = null;
+            Long i = 0L;
+            for (Object item : uidWorkSet) {
+                if (item.toString().equals(pidName)) {
+                    remoteWorkerId = i;
+                    break;
+                }
+                i++;
+            }
+
+            if (Objects.nonNull(remoteWorkerId)) {
+                if (!workerId.equals(remoteWorkerId)) {
+                    // 订正本地workerId文件
+                    fixedWorkerIdFile(remoteWorkerId);
+                }
+            } else {
+                // redis上没有记录,说明是人为修改的或增加的workerId文件(如果非人为修改，不会发生这样的情况)，这里保险处理
+                if (null == remoteWorkerId) {
+                    // redis上创建新节点，并删除本地错误的workerId文件
+                    remoteWorkerId = (long)uidWorkSet.size();
+                    redisTemplate.opsForZSet().add(UID_FOREVER, pidName, System.currentTimeMillis());
+                    fixedWorkerIdFile(remoteWorkerId);
+                }
+            }
         }
-        /**
-         * 2、创建临时机器节点的时间
-         */
-        redisTemplate.opsForValue().set(UID_TEMPORARY + pidName, String.valueOf(System.currentTimeMillis()), interval * 3000, TimeUnit.MILLISECONDS);
+
         active.set(true);
         
         /**
-         * 3、获取本地时间，跟uid 活跃节点心跳列表的时间平均值做比较(uid 活跃节点心跳列表 用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
+         * 3、获取本地时间，跟uid
          */
         Double lastTimeMillisDouble = redisTemplate.opsForZSet().score(UID_FOREVER, pidName);
         if (Objects.isNull(lastTimeMillisDouble)) {
-            lastTimeMillisDouble = new Double(System.currentTimeMillis());
+            throw new RuntimeException("未获取到最新上报的时间戳");
         }
         long lastTimeMillis = lastTimeMillisDouble.longValue();
-        if (CollectionUtils.isEmpty(uidWorkSet)) {
-            return lastTimeMillis;
-        }
-        long sumTime = 0;
-        int itemCount = 0;
-        for (Object itemName : uidWorkSet) {
-            Object itemValue = redisTemplate.opsForValue().get(UID_TEMPORARY + itemName);
-            if (Objects.nonNull(itemValue)) {
-                itemCount ++;
-                sumTime += Long.valueOf((String) itemValue);
-            }
-        }
-        if (itemCount == 0) {
-            return lastTimeMillis;
-        }
-        long averageTimeMillis = sumTime / itemCount;
-        return averageTimeMillis > lastTimeMillis ? averageTimeMillis : lastTimeMillis;
+        return lastTimeMillis;
     }
     
     @Override
@@ -112,11 +112,14 @@ public class RedisWorkIdAssigner extends AbstractIntervalWorkId {
     
     @Override
     public void report() {
-        long currentTimeMillis = System.currentTimeMillis();
-        redisTemplate.opsForValue().set(UID_TEMPORARY + pidName, String.valueOf(currentTimeMillis), interval * 3, TimeUnit.MILLISECONDS);
-        Double lastTimestamp = redisTemplate.opsForZSet().score(UID_FOREVER, pidName);
-        Double timestamp = new BigDecimal(currentTimeMillis).subtract(new BigDecimal(lastTimestamp)).doubleValue();
+        long currentTimestamp = System.currentTimeMillis();
+        if (currentTimestamp < lastTimestamp) {
+            log.warn("由于当前时间戳[{}]小于上次时间戳[{}]workerNode[{}]忽略上报至[{}]节点", currentTimestamp, lastTimestamp, UID_FOREVER+ ":" + pidName);
+            return;
+        }
+        Double lastUploadTimestamp = redisTemplate.opsForZSet().score(UID_FOREVER, pidName);
+        Double timestamp = new BigDecimal(currentTimestamp).subtract(new BigDecimal(lastUploadTimestamp)).doubleValue();
         redisTemplate.opsForZSet().incrementScore(UID_FOREVER, pidName, timestamp);
-        log.debug("workerId[{}]上报时间戳[{}]至[{}]和[{}]", workerId, currentTimeMillis, UID_TEMPORARY + pidName, UID_FOREVER+ ":" + pidName);
+        log.debug("workerNode[{}]上报时间戳[{}]至[{}]", workerId, currentTimestamp, UID_FOREVER+ ":" + pidName);
     }
 }

@@ -1,6 +1,7 @@
 package cn.jaychang.ecp.uid.worker;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -41,12 +42,18 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     /**
      * 本地workid文件跟目录
      */
-    public static final String PID_ROOT = "/tmp/ecp-uid/pids/";
+    public static final String PID_ROOT = System.getProperty("java.io.tmpdir") + File.separator +"/ecp-uid/pids/";
     
     /**
      * 线程名-心跳
      */
     public static final String THREAD_HEARTBEAT_NAME = "ecp_uid_heartbeat";
+
+
+    /**
+     * 下划线常量
+     */
+    public static final String UNDERLINE = "_";
     
     /**
      * 心跳是否活跃原子标识
@@ -84,13 +91,19 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     protected ServerSocket socket;
 
     protected ApplicationContext applicationContext;
+
+
+    /**
+     * 上次工作节点上报的时间戳，初始为0
+     */
+    protected long lastTimestamp;
     
     @Override
     public void afterPropertiesSet()
         throws Exception {
         try {
             /**
-             * 1、检查workId文件是否存在。文件名为ip_port_顺序编号
+             * 检查workId文件是否存在。文件名为ip_port_顺序编号
              */
             ServerSocketHolder socketHolder = new ServerSocketHolder();
             // pidName 格式： ip地址_端口号
@@ -107,7 +120,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             // 不同端口号 workerId 必须是不同的
             workerId = WorkerIdUtils.getPid(pidHome, pidName);
             /**
-             * 3、获取本地时间，跟uid 机器节点心跳列表的时间平均值做比较(uid 机器节点心跳列表 用于存储活跃节点的上报时间，每隔一段时间上报一次临时节点时间)
+             * 获取本地时间，跟uid 机器节点上报的时间戳比较做差值
              */
             long diff = System.currentTimeMillis() - action();
             if (diff < 0) {
@@ -117,8 +130,8 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             if (null != workerId) {
                 startHeartBeatThread();
                 // 赋值workerId
-                // pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId 格式： /tmp/ecp-uid/pids/ip地址_端口号_workerId
-                WorkerIdUtils.writePidFile(pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId);
+                // pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId 格式： System.getProperty("java.io.tmpdir") + /ecp-uid/pids/ip地址_端口号_workerId
+                WorkerIdUtils.writePidFile(pidHome + File.separator + pidName + WorkerIdUtils.WORKER_SPLIT + workerId);
             }
         } catch (Exception e) {
             active.set(false);
@@ -143,9 +156,51 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     /**
      * @方法名称 action
      * @功能描述 <pre>workId文件不存在时的操作</pre>
-     * @return 机器节点列表的 活跃时间平均值
+     * @return 机器节点上报的时间戳
      */
     public abstract long action();
+
+    /**
+     * 修正workerId
+     */
+    protected void fixedWorkerIdFile(Long correctWorkerId) {
+        log.warn("本地文件的workerId[{}]与zk上的workerId[{}]不一致，以zk上的workerId为准", workerId, correctWorkerId);
+        // 删除现在的workerId本地文件，重新创建workerId本地文件
+        deleteOldWorkerIdFile();
+        createNewWorkerIdFile(correctWorkerId);
+        // 订正workerId的值 (一般情况不会发生，除非手工改文件名)
+        workerId = correctWorkerId;
+    }
+
+    /**
+     * 删除workerId文件
+     */
+    protected void deleteOldWorkerIdFile() {
+        String oldWorkerIdFileName = pidHome + pidName + UNDERLINE + workerId;
+        File oldWorkerIdFile = new File(oldWorkerIdFileName);
+        if (!oldWorkerIdFile.delete()) {
+            throw new RuntimeException(String.format("删除[%s]失败", oldWorkerIdFileName));
+        }
+        log.debug("删除[{}]成功", oldWorkerIdFileName);
+    }
+
+    /**
+     * 创建新的workerId文件
+     * @param correctWorkerId
+     */
+    protected void createNewWorkerIdFile(Long correctWorkerId) {
+        String newWorkerIdFileName = pidHome + pidName + UNDERLINE + correctWorkerId;
+        File newWorkerIdFile = new File(newWorkerIdFileName);
+        if (newWorkerIdFile.exists()) {
+            return;
+        }
+        try {
+            newWorkerIdFile.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("创建[%s]失败", newWorkerIdFileName));
+        }
+        log.debug("创建[{}]成功", newWorkerIdFileName);
+    }
     
     /**
      * @方法名称 startHeartBeatThread
