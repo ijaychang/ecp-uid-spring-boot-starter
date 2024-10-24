@@ -2,6 +2,7 @@ package cn.jaychang.ecp.uid.worker;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -206,5 +207,20 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    /** 分配8个字节(刚好可以存储Long类型的时间戳)的缓冲区 */
+    protected static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+
+    public static byte[] longToBytes(long x) {
+        buffer.putLong(0, x);
+        return buffer.array();
+    }
+
+    public static long bytesToLong(byte[] bytes) {
+        buffer.clear();
+        buffer.put(bytes, 0, bytes.length);
+        buffer.flip();// need flip
+        return buffer.getLong();
     }
 }

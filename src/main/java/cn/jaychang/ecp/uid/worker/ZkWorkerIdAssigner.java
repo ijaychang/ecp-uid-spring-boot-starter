@@ -237,18 +237,5 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
         this.zkAddress = zkAddress;
     }
 
-    /** 分配8个字节(刚好可以存储Long类型的时间戳)的缓冲区 */
-    private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-    
-    public static byte[] longToBytes(long x) {
-        buffer.putLong(0, x);
-        return buffer.array();
-    }
-    
-    public static long bytesToLong(byte[] bytes) {
-        buffer.clear();
-        buffer.put(bytes, 0, bytes.length);
-        buffer.flip();// need flip
-        return buffer.getLong();
-    }
+
 }
