@@ -28,8 +28,7 @@ public class WorkerIdConfiguration {
             ZkWorkerIdAssigner zkWorkerIdAssigner = new ZkWorkerIdAssigner();
             zkWorkerIdAssigner.setZkAddress(workerIdAssignerProperties.getZkAddr());
             zkWorkerIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
-            zkWorkerIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
-            zkWorkerIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
+            zkWorkerIdAssigner.setPort(workerIdAssignerProperties.getPidPort());
             workerIdAssigner = zkWorkerIdAssigner;
         } else if (WorkerIdAssignerEnum.DB.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             DisposableWorkerIdAssigner disposableWorkerIdAssigner = new DisposableWorkerIdAssigner();
@@ -37,8 +36,7 @@ public class WorkerIdConfiguration {
         } else if (WorkerIdAssignerEnum.REDIS.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             RedisWorkIdAssigner redisWorkIdAssigner = new RedisWorkIdAssigner();
             redisWorkIdAssigner.setInterval(workerIdAssignerProperties.getHeartbeatInterval());
-            redisWorkIdAssigner.setPidHome(workerIdAssignerProperties.getPidHome());
-            redisWorkIdAssigner.setPidPort(workerIdAssignerProperties.getPidPort());
+            redisWorkIdAssigner.setPort(workerIdAssignerProperties.getPidPort());
             workerIdAssigner = redisWorkIdAssigner;
         } else if (WorkerIdAssignerEnum.SIMPLE.equals(workerIdAssignerProperties.getWorkerIdAssigner())) {
             SimpleWorkerIdAssigner simpleWorkerIdAssigner = new SimpleWorkerIdAssigner();

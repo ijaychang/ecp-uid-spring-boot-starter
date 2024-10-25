@@ -6,6 +6,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.*;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -85,63 +86,35 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                 zkClient.create().withMode(CreateMode.PERSISTENT).forPath(uidForeverPath);
             }
             // 格式举例： /forever/192.168.56.1_53001_
-            String workNode = uidForeverPath + ZK_SPLIT + pidName + UNDERLINE;
+            String workNode = uidForeverPath + ZK_SPLIT + ipPort + UNDERLINE;
             
             /**
-             * 文件不存在，检查zk上是否存在ip_port的节点
+             * 检查zk上是否存在ip_port的节点
              */
-            if (null == workerId) {
-                List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
+            List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
+            if (!CollectionUtils.isEmpty(seqNodePaths)) {
                 for (String nodePath : seqNodePaths) {
-                    if (nodePath.startsWith(pidName)) {
+                    if (nodePath.startsWith(ipPort)) {
                         // nodePath 是不完整的路径，所以需要拼接上 uidForeverPath
                         foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
                         workerId = Long.valueOf(nodePath.substring(nodePath.lastIndexOf("-") + 1));
                         break;
                     }
                 }
-                // zk上不存在对应ip_port的持久顺序节点，则创建ip_port持久顺序节点
-                if (null == workerId) {
-                    // 这里创建创建完成返回的nodePath是完整路径
-                    String createdNodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
-                    foreverNode = createdNodePath;
-                    workerId = Long.valueOf(createdNodePath.substring(createdNodePath.lastIndexOf("-") + 1));
-                }
-            } else {
-                // 本地文件已有记录workerId的文件，校验下与zk上记录的workerId是否一致(如果非人为修改，肯定是一致的)，校验下的话，保险一点
-                Long remoteWorkerId = null;
-                List<String> seqNodePaths = zkClient.getChildren().forPath(uidForeverPath);
-                for (String nodePath : seqNodePaths) {
-                    if (!nodePath.startsWith(pidName)) {
-                        continue;
-                    }
-                    // nodePath 是不完整的路径，所以需要拼接上 uidForeverPath
-                    foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
-                    remoteWorkerId = Long.valueOf(nodePath.substring(nodePath.lastIndexOf("-") + 1));
-                }
-
-                if (Objects.nonNull(remoteWorkerId)) {
-                    if (!workerId.equals(remoteWorkerId)) {
-                        // 订正本地workerId文件
-                        fixedWorkerIdFile(remoteWorkerId);
-                    }
-                } else {
-                    // zk上没有记录,说明是人为修改的或增加的workerId文件(如果非人为修改，不会发生这样的情况)，这里保险处理
-                    if (null == remoteWorkerId) {
-                        // zk上创建新节点，并删除本地错误的workerId文件
-                        String createdNodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
-                        foreverNode = createdNodePath;
-                        remoteWorkerId = Long.valueOf(createdNodePath.substring(createdNodePath.lastIndexOf("-") + 1));
-                        fixedWorkerIdFile(remoteWorkerId);
-                    }
-                }
+            }
+            // zk上不存在对应ip_port的持久顺序节点，则创建ip_port持久顺序节点
+            if (null == workerId) {
+                // 这里创建创建完成返回的nodePath是完整路径
+                String createdNodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
+                foreverNode = createdNodePath;
+                workerId = Long.valueOf(createdNodePath.substring(createdNodePath.lastIndexOf("-") + 1));
             }
 
             active.set(true);
 
             // 从持久节点上获取上报的最新时间戳
-            long latestTimestamp = bytesToLong(zkClient.getData().forPath(foreverNode));
-            return latestTimestamp;
+            lastTimestamp = bytesToLong(zkClient.getData().forPath(foreverNode));
+            return lastTimestamp;
         } catch (KeeperException | InterruptedException | IOException e) {
             log.error("zk初始化节点、或上报时间戳至zk节点失败", e);
         } catch (Exception e) {
@@ -167,11 +140,11 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
     @Override
     public void report() {
         long currentTimestamp = System.currentTimeMillis();
+        if (currentTimestamp < lastTimestamp) {
+            log.warn("由于当前时间戳[{}]小于上次时间戳[{}]workerNode[{}]忽略上报至[{}]节点", currentTimestamp, lastTimestamp, foreverNode);
+            return;
+        }
         try {
-            if (currentTimestamp < lastTimestamp) {
-                log.warn("由于当前时间戳[{}]小于上次时间戳[{}]workerNode[{}]忽略上报至[{}]节点", currentTimestamp, lastTimestamp, foreverNode);
-                return;
-            }
             byte[] longToBytes = longToBytes(currentTimestamp);
             zkClient.setData().forPath(foreverNode, longToBytes);
             lastTimestamp = currentTimestamp;

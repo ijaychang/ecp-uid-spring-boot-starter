@@ -1,7 +1,5 @@
 package cn.jaychang.ecp.uid.worker;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -12,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import cn.jaychang.ecp.uid.baidu.utils.NamingThreadFactory;
 import cn.jaychang.ecp.uid.config.properties.InetUtilsProperties;
+import cn.jaychang.ecp.uid.util.InetUtils;
 import cn.jaychang.ecp.uid.util.ServerSocketHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
@@ -21,6 +20,7 @@ import cn.jaychang.ecp.uid.util.WorkerIdUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @类名称 AbstractIntervalWorkId.java
@@ -39,11 +39,7 @@ import org.springframework.util.CollectionUtils;
  */
 @Slf4j
 public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, InitializingBean, DisposableBean, ApplicationContextAware {
-    /**
-     * 本地workid文件跟目录
-     */
-    public static final String PID_ROOT = System.getProperty("java.io.tmpdir") + File.separator +"/ecp-uid/pids/";
-    
+
     /**
      * 线程名-心跳
      */
@@ -64,26 +60,21 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
      * 心跳间隔
      */
     protected Long interval = 3000L;
-    
-    /**
-     * workerID 文件存储路径
-     */
-    protected String pidHome = PID_ROOT;
-    
+
     /**
      * 工作节点ID (可理解为一个运行的Java应用，需要给这个应用分配一个ID)
      */
     protected Long workerId;
     
     /**
-     * 使用端口(同机多uid应用时区分端口)
+     * 占用的端口号(同机多uid应用时区分端口)
      */
-    private Integer pidPort;
+    private Integer port;
 
     /**
      * ip地址_端口号
      */
-    protected String pidName;
+    protected String ipPort;
 
     /**
      * 需要占用的端口
@@ -108,17 +99,25 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             ServerSocketHolder socketHolder = new ServerSocketHolder();
             // pidName 格式： ip地址_端口号
             InetUtilsProperties inetUtilsProperties = applicationContext.getBean(InetUtilsProperties.class);
-            if (Objects.nonNull(inetUtilsProperties)
-                    && (!CollectionUtils.isEmpty(inetUtilsProperties.getIgnoredInterfaces())
-                    || !CollectionUtils.isEmpty(inetUtilsProperties.getPreferredNetworks()))) {
-                pidName = WorkerIdUtils.getPidName(pidPort, socketHolder, inetUtilsProperties);
+            // 如果是 springboot 应用，且未指定设置端口号则使用 springboot 应用的端口
+            String serverPort = applicationContext.getEnvironment().getProperty("server.port");
+            if (StringUtils.hasText(serverPort) && Objects.isNull(port)) {
+                port = Integer.valueOf(serverPort);
+                InetUtils inetUtils = new InetUtils(inetUtilsProperties);
+                String ipAddr = inetUtils.findFirstNonLoopbackAddress().getHostAddress();
+                ipPort = ipAddr + UNDERLINE + port;
             } else {
-                pidName = WorkerIdUtils.getPidName(pidPort, socketHolder);
+                if (Objects.nonNull(inetUtilsProperties)
+                        && (!CollectionUtils.isEmpty(inetUtilsProperties.getIgnoredInterfaces())
+                        || !CollectionUtils.isEmpty(inetUtilsProperties.getPreferredNetworks()))) {
+                    ipPort = WorkerIdUtils.getIpPort(port, socketHolder, inetUtilsProperties);
+                } else {
+                    ipPort = WorkerIdUtils.getIpPort(port, socketHolder);
+                }
+                socket = socketHolder.getServerSocket();
+                port = socket.getLocalPort();
             }
-            socket = socketHolder.getServerSocket();
-            pidPort = socket.getLocalPort();
-            // 不同端口号 workerId 必须是不同的
-            workerId = WorkerIdUtils.getPid(pidHome, pidName);
+
             /**
              * 获取本地时间，跟uid 机器节点上报的时间戳比较做差值
              */
@@ -129,9 +128,6 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
             }
             if (null != workerId) {
                 startHeartBeatThread();
-                // 赋值workerId
-                // pidHome + File.separatorChar + pidName + WorkerIdUtils.WORKER_SPLIT + workerId 格式： System.getProperty("java.io.tmpdir") + /ecp-uid/pids/ip地址_端口号_workerId
-                WorkerIdUtils.writePidFile(pidHome + File.separator + pidName + WorkerIdUtils.WORKER_SPLIT + workerId);
             }
         } catch (Exception e) {
             active.set(false);
@@ -148,7 +144,7 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
          if (null != socket) {
              if (!socket.isClosed()) {
                  socket.close();
-                 log.debug("已关闭socket端口[{}]", pidPort);
+                 log.debug("已关闭socket端口[{}]", port);
              }
          }
     }
@@ -159,48 +155,6 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
      * @return 机器节点上报的时间戳
      */
     public abstract long action();
-
-    /**
-     * 修正workerId
-     */
-    protected void fixedWorkerIdFile(Long correctWorkerId) {
-        log.warn("本地文件的workerId[{}]与zk上的workerId[{}]不一致，以zk上的workerId为准", workerId, correctWorkerId);
-        // 删除现在的workerId本地文件，重新创建workerId本地文件
-        deleteOldWorkerIdFile();
-        createNewWorkerIdFile(correctWorkerId);
-        // 订正workerId的值 (一般情况不会发生，除非手工改文件名)
-        workerId = correctWorkerId;
-    }
-
-    /**
-     * 删除workerId文件
-     */
-    protected void deleteOldWorkerIdFile() {
-        String oldWorkerIdFileName = pidHome + pidName + UNDERLINE + workerId;
-        File oldWorkerIdFile = new File(oldWorkerIdFileName);
-        if (!oldWorkerIdFile.delete()) {
-            throw new RuntimeException(String.format("删除[%s]失败", oldWorkerIdFileName));
-        }
-        log.debug("删除[{}]成功", oldWorkerIdFileName);
-    }
-
-    /**
-     * 创建新的workerId文件
-     * @param correctWorkerId
-     */
-    protected void createNewWorkerIdFile(Long correctWorkerId) {
-        String newWorkerIdFileName = pidHome + pidName + UNDERLINE + correctWorkerId;
-        File newWorkerIdFile = new File(newWorkerIdFileName);
-        if (newWorkerIdFile.exists()) {
-            return;
-        }
-        try {
-            newWorkerIdFile.createNewFile();
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("创建[%s]失败", newWorkerIdFileName));
-        }
-        log.debug("创建[{}]成功", newWorkerIdFileName);
-    }
     
     /**
      * @方法名称 startHeartBeatThread
@@ -243,20 +197,12 @@ public abstract class AbstractIntervalWorkId implements WorkerIdAssigner, Initia
         this.interval = interval;
     }
     
-    public String getPidHome() {
-        return pidHome;
+    public Integer getPort() {
+        return port;
     }
     
-    public void setPidHome(String pidHome) {
-        this.pidHome = pidHome;
-    }
-    
-    public Integer getPidPort() {
-        return pidPort;
-    }
-    
-    public void setPidPort(Integer pidPort) {
-        this.pidPort = pidPort;
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     @Override

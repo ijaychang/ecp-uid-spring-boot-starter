@@ -27,11 +27,6 @@ public class WorkerIdAssignerProperties implements Serializable {
     private Long heartbeatInterval = 3000L;
 
     /**
-     * pidHome:workerId file store directory (only use zk or redis work id assigner,this field is effective)
-     */
-    private String pidHome = AbstractIntervalWorkId.PID_ROOT;
-
-    /**
      * pidPort:heartbeat port (only use zk or redis work id assigner,this field is effective)
      */
     private Integer pidPort;

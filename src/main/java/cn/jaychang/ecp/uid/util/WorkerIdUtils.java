@@ -41,80 +41,53 @@ public class WorkerIdUtils {
      * @param socketHolder
      * @return
      */
-    public static String getPidName(Integer pidPort, ServerSocketHolder socketHolder) {
-        String pidName = NetUtils.getLocalInetAddress().getHostAddress();
-        if (null != pidPort) {
+    public static String getIpPort(Integer port, ServerSocketHolder socketHolder) {
+        String ipAddr = NetUtils.getLocalInetAddress().getHostAddress();
+        if (null != port) {
             // 占用端口
-            pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort(BEGIN_PID_PORT);
+            port = port > 0 ? port : NetUtils.getAvailablePort(BEGIN_PID_PORT);
         } else {
-            pidPort = NetUtils.getAvailablePort(BEGIN_PID_PORT);
+            port = NetUtils.getAvailablePort(BEGIN_PID_PORT);
         }
         try {
-            ServerSocket serverSocket = new ServerSocket(pidPort);
+            ServerSocket serverSocket = new ServerSocket(port);
             socketHolder.setServerSocket(serverSocket);
         } catch (IOException e) {
-            String errMsg = String.format("端口[%s]占用失败！", pidPort);
+            String errMsg = String.format("端口[%s]占用失败！", port);
             log.error(errMsg, e);
             throw new RuntimeException(errMsg);
         }
-        return pidName + WorkerIdUtils.WORKER_SPLIT + pidPort;
+        return ipAddr + WorkerIdUtils.WORKER_SPLIT + port;
     }
 
     /**
-     * @方法名称 getPidName 格式：ip地址_端口号
+     * @方法名称 getIpPort 格式：ip地址_端口号
      * @功能描述 <pre>获取workId文件名</pre>
-     * @param pidPort 使用端口(同机多uid应用时区分端口)
+     * @param port 使用端口(同机多uid应用时区分端口)
      * @param socketHolder
      * @param inetUtilsProperties
      * @return
      */
-    public static String getPidName(Integer pidPort, ServerSocketHolder socketHolder, InetUtilsProperties inetUtilsProperties) {
+    public static String getIpPort(Integer port, ServerSocketHolder socketHolder, InetUtilsProperties inetUtilsProperties) {
         InetUtils inetUtils = new InetUtils(inetUtilsProperties);
-        String pidName = inetUtils.findFirstNonLoopbackAddress().getHostAddress();
-        if (null != pidPort) {
+        String ipAddr = inetUtils.findFirstNonLoopbackAddress().getHostAddress();
+        if (null != port) {
             // 占用端口
-            pidPort = pidPort > 0 ? pidPort : NetUtils.getAvailablePort(BEGIN_PID_PORT);
+            port = port > 0 ? port : NetUtils.getAvailablePort(BEGIN_PID_PORT);
         } else {
-            pidPort = NetUtils.getAvailablePort(BEGIN_PID_PORT);
+            port = NetUtils.getAvailablePort(BEGIN_PID_PORT);
         }
         try {
-            ServerSocket serverSocket = new ServerSocket(pidPort);
+            ServerSocket serverSocket = new ServerSocket(port);
             socketHolder.setServerSocket(serverSocket);
         } catch (IOException e) {
-            String errMsg = String.format("端口[%s]占用失败！", pidPort);
+            String errMsg = String.format("端口[%s]占用失败！", port);
             log.error(errMsg, e);
             throw new RuntimeException(errMsg);
         }
-        return pidName + WorkerIdUtils.WORKER_SPLIT + pidPort;
+        return ipAddr + WorkerIdUtils.WORKER_SPLIT + port;
     }
-    
-    /**
-     * @方法名称 getPid
-     * @功能描述 <pre>查找pid文件，根据前缀获取workid</pre>
-     * @param pidHome workerID文件存储路径
-     * @param prefix workerID文件前缀
-     * @return workerID值
-     */
-    public static Long getPid(String pidHome, String prefix) {
-        String pid = null;
-        File home = new File(pidHome);
-        if (home.exists() && home.isDirectory()) {
-            File[] files = home.listFiles();
-            for (File file : files) {
-                if (file.getName().startsWith(prefix)) {
-                    pid = file.getName();
-                    break;
-                }
-            }
-            if (null != pid) {
-                return Long.valueOf(pid.substring(pid.lastIndexOf(WORKER_SPLIT) + 1));
-            }
-        } else {
-            home.mkdirs();
-        }
-        return null;
-    }
-    
+
     /**
      * @方法名称 sleepMs
      * @功能描述 <pre>回拨时间睡眠等待</pre>
