@@ -1,12 +1,11 @@
 package cn.jaychang.ecp.uid.idleaf;
 
+import cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
 
 import net.sourceforge.groboutils.junit.v1.MultiThreadedTestRunner;
 import net.sourceforge.groboutils.junit.v1.TestRunnable;
@@ -31,7 +30,7 @@ import net.sourceforge.groboutils.junit.v1.TestRunnable;
 public class SegmentServiceImplTest extends Thread {
     
     @Autowired
-    SegmentServiceImpl segmentServiceImpl;
+    SegmentIDGenImpl segmentIDGen;
     
     @Test
     public void testSych() {
@@ -39,7 +38,7 @@ public class SegmentServiceImplTest extends Thread {
             @Override
             public void runTest()
                 throws Throwable {
-                System.out.println(Thread.currentThread().getName() + ":" + segmentServiceImpl.getId());
+                System.out.println(Thread.currentThread().getName() + ":" + segmentIDGen.get());
             }
         };
         // 开13，23，43个线程进行测试,step设置为10
@@ -61,7 +60,7 @@ public class SegmentServiceImplTest extends Thread {
     class LeafThread extends Thread {
         @Override
         public void run() {
-            System.out.println(this.getName() + "的id：" + segmentServiceImpl.getId());
+            System.out.println(this.getName() + "的id：" + segmentIDGen.get());
         }
     }
 }

@@ -1,8 +1,8 @@
 package cn.jaychang.ecp.uid.extend.strategy;
 
 import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
+import cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl;
 import cn.jaychang.ecp.uid.spring.ColumnMaxValueIncrementer;
-import cn.jaychang.ecp.uid.leaf.ISegmentService;
 
 /**
  * @类名称 SpringStrategy.java
@@ -26,12 +26,12 @@ public class SpringStepStrategy extends MeituanLeafStrategy {
     }
     
     @Override
-    public ISegmentService getSegmentService(String prefix) {
-        ISegmentService segmentService = generatorMap.get(prefix);
+    public SegmentIDGenImpl getSegmentService(String prefix) {
+        SegmentIDGenImpl segmentService = generatorMap.get(prefix);
         if (null == segmentService) {
             synchronized (generatorMap) {
                 if (null == segmentService) {
-                    segmentService = new ColumnMaxValueIncrementer(jdbcTemplate, prefix);
+                    segmentService = new ColumnMaxValueIncrementer(prefix);
                 }
                 generatorMap.put(prefix, segmentService);
             }

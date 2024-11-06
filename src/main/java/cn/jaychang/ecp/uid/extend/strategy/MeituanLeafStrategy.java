@@ -4,11 +4,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
+import cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl;
+import cn.jaychang.ecp.uid.leaf.dao.IDAllocDao;
+import cn.jaychang.ecp.uid.leaf.service.IDAllocService;
+import cn.jaychang.ecp.uid.leaf.service.impl.IDAllocServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import cn.jaychang.ecp.uid.leaf.ISegmentService;
-import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
 
 /**
  * @类名称 LeafSegmentStrategy.java
@@ -27,11 +30,12 @@ import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
  */
 public class MeituanLeafStrategy implements IUidStrategy {
     private final static String MSG_UID_PARSE = "{\"UID\":\"%s\"}";
+    private final static Logger log = LoggerFactory.getLogger(MeituanLeafStrategy.class);
     
     /**
      * 生成器集合
      */
-    protected static Map<String, ISegmentService> generatorMap = new ConcurrentHashMap<>();
+    protected static Map<String, SegmentIDGenImpl> generatorMap = new ConcurrentHashMap<>();
     
     @Autowired
     protected JdbcTemplate jdbcTemplate;
@@ -48,12 +52,20 @@ public class MeituanLeafStrategy implements IUidStrategy {
      * @param prefix 前缀
      * @return uid生成器
      */
-    public ISegmentService getSegmentService(String prefix) {
-        ISegmentService segmentService = generatorMap.get(prefix);
+    public SegmentIDGenImpl getSegmentService(String prefix) {
+        SegmentIDGenImpl segmentService = generatorMap.get(prefix);
         if (null == segmentService) {
             synchronized (generatorMap) {
                 if (null == segmentService) {
-                    segmentService = new SegmentServiceImpl(jdbcTemplate, prefix);
+                    IDAllocDao idAllocDao = new IDAllocDao(jdbcTemplate);
+                    IDAllocService idAllocService = new IDAllocServiceImpl(idAllocDao);
+                    segmentService = new SegmentIDGenImpl();
+                    segmentService.setIdAllocService(idAllocService);
+                    if (segmentService.init()) {
+                        log.info("Segment Service Init Successfully");
+                    } else {
+                        throw new RuntimeException("Segment Service Init Fail");
+                    }
                 }
                 generatorMap.put(prefix, segmentService);
             }
@@ -68,7 +80,7 @@ public class MeituanLeafStrategy implements IUidStrategy {
     
     @Override
     public long getUID(String group) {
-        return getSegmentService(group).getId();
+        return getSegmentService(group).get();
     }
     
     @Override

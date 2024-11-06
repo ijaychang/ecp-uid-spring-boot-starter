@@ -1,10 +1,8 @@
 package cn.jaychang.ecp.uid.spring;
 
+import cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
-
-import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
 
 /**
  * @类名称 ColumnMaxValueIncrementer.java
@@ -21,33 +19,34 @@ import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
  *     ----------------------------------------------
  * </pre>
  */
-public class ColumnMaxValueIncrementer extends SegmentServiceImpl implements DataFieldMaxValueIncrementer {
-    
+public class ColumnMaxValueIncrementer extends SegmentIDGenImpl implements DataFieldMaxValueIncrementer {
+
+    private String bizTag;
     /**
      * 填充长度
      */
     protected int paddingLength = 8;
     
-    public ColumnMaxValueIncrementer(JdbcTemplate jdbcTemplate, String bizTag) {
-        super(jdbcTemplate, bizTag);
+    public ColumnMaxValueIncrementer(String bizTag) {
+        this.bizTag = bizTag;
     }
     
     @Override
     public int nextIntValue()
         throws DataAccessException {
-        return getId().intValue();
+        return get(bizTag).intValue();
     }
     
     @Override
     public long nextLongValue()
         throws DataAccessException {
-        return getId();
+        return get(bizTag);
     }
     
     @Override
     public String nextStringValue()
         throws DataAccessException {
-        String s = Long.toString(getId());
+        String s = Long.toString(get(bizTag));
         int len = s.length();
         if (len < this.paddingLength) {
             StringBuilder sb = new StringBuilder(this.paddingLength);
@@ -62,9 +61,5 @@ public class ColumnMaxValueIncrementer extends SegmentServiceImpl implements Dat
     
     public void setPaddingLength(int paddingLength) {
         this.paddingLength = paddingLength;
-    }
-    
-    public int getPaddingLength() {
-        return this.paddingLength;
     }
 }

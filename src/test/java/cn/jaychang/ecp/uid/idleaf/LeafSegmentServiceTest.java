@@ -11,6 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
-
 /**
  * @author sunff
  * 
@@ -34,8 +33,7 @@ import cn.jaychang.ecp.uid.leaf.SegmentServiceImpl;
 public class LeafSegmentServiceTest {
     
     @Autowired
-    @Qualifier("segmentService")
-    private SegmentServiceImpl segmentServiceImpl;
+    private SegmentIDGenImpl segmentIDGen;
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -46,7 +44,7 @@ public class LeafSegmentServiceTest {
     public void synGetId() {
         int i =0;
         while (true) {
-            System.out.println(++i +" ：" + segmentServiceImpl.getId());
+            System.out.println(++i +" ：" + segmentIDGen.get("default"));
         }
     }
     
@@ -149,7 +147,7 @@ public class LeafSegmentServiceTest {
         while (true) {
             // System.out.println(idLeafService.getId());
             try {
-                queue.put(segmentServiceImpl.getId());
+                queue.put(segmentIDGen.get());
                 count++;
                 if (count % 1000 == 0) {
                     System.out.println("current count no is " + count);
