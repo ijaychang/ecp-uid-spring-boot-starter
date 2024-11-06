@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ColumnMaxValueIncrementerTest {
 
     @Autowired
-    @Qualifier("productNoIncrementer")
+    @Qualifier("orderIncrementer")
     private DataFieldMaxValueIncrementer incrementer;
 
     @Test

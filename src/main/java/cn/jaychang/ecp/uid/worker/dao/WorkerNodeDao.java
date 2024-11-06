@@ -69,5 +69,8 @@ public class WorkerNodeDao {
         String sql = "INSERT INTO worker_node(create_time, update_time, host_name, port, type, launch_date) " + " VALUES (NOW(), NOW(), ?, ?, ?, ?)";
         this.jdbcTemplate.update(sql, new Object[] {workerNode.getHostName(), workerNode.getPort(), workerNode.getType(), workerNode.getLaunchDate()});
     }
-    
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 }

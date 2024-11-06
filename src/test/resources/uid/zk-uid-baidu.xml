@@ -5,7 +5,7 @@
 
     <!-- UID generator -->
     <bean id="zkWorkerIdAssigner" class="cn.jaychang.ecp.uid.worker.ZkWorkerIdAssigner">
-    	<property name="zkAddress" value="172.16.51.123:2181" />
+    	<property name="zkAddress" value="localhost:2181" />
     </bean>
 
     <bean id="defaultUidGenerator" class="cn.jaychang.ecp.uid.baidu.impl.DefaultUidGenerator" lazy-init="false" scope="prototype" >

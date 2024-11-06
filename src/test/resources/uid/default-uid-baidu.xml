@@ -17,6 +17,6 @@
     </bean>
 
     <!-- Import mybatis config -->
-    <import resource="classpath:/uid/mybatis-uid.xml"/>
+    <import resource="classpath:/uid/worker-dao.xml"/>
 
 </beans>
