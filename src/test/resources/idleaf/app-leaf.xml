@@ -42,5 +42,6 @@
 
 	<bean id="segmentService" class="cn.jaychang.ecp.uid.leaf.SegmentIDGenImpl" init-method="init">
 		<property name="idAllocService" ref="idAllocService"/>
+		<property name="bizTag" value="default"/>
 	</bean>
 </beans>

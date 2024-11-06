@@ -45,10 +45,10 @@
 	</bean>
 
 	<bean id="orderIncrementer" parent="columnMaxValueIncrementer" init-method="init">
-		<constructor-arg name="bizTag" value="order" />
-	</bean>
+		<property name="bizTag" value="order"/>
+ 	</bean>
 	
 	<bean id="productNoIncrementer" parent="columnMaxValueIncrementer"  init-method="init">
-		<constructor-arg name="bizTag" value="productNo" />
+		<property name="bizTag" value="product"/>
 	</bean>
 </beans>

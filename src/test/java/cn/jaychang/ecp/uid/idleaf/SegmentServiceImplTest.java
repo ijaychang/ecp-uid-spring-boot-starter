@@ -30,7 +30,7 @@ import net.sourceforge.groboutils.junit.v1.TestRunnable;
 public class SegmentServiceImplTest extends Thread {
     
     @Autowired
-    SegmentIDGenImpl segmentIDGen;
+    private SegmentIDGenImpl segmentIDGen;
     
     @Test
     public void testSych() {

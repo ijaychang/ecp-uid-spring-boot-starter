@@ -39,7 +39,7 @@ public class SegmentIDGenImpl {
     private volatile boolean initOK = false;
     private Map<String, SegmentBuffer> cache = new ConcurrentHashMap<String, SegmentBuffer>();
     private IDAllocService idAllocService;
-    private static final String DEFAULT_KEY = "default";
+    protected String bizTag;
 
     public static class UpdateThreadFactory implements ThreadFactory {
 
@@ -136,7 +136,7 @@ public class SegmentIDGenImpl {
     }
 
     public Long get() {
-        return get(DEFAULT_KEY);
+        return get(bizTag);
     }
 
     public Long get(final String key) {
@@ -303,5 +303,9 @@ public class SegmentIDGenImpl {
 
     public void setIdAllocService(IDAllocService idAllocService) {
         this.idAllocService = idAllocService;
+    }
+
+    public void setBizTag(String bizTag) {
+        this.bizTag = bizTag;
     }
 }

@@ -31,7 +31,8 @@ public class SpringStepStrategy extends MeituanLeafStrategy {
         if (null == segmentService) {
             synchronized (generatorMap) {
                 if (null == segmentService) {
-                    segmentService = new ColumnMaxValueIncrementer(prefix);
+                    segmentService = new ColumnMaxValueIncrementer();
+                    segmentService.setBizTag(prefix);
                 }
                 generatorMap.put(prefix, segmentService);
             }

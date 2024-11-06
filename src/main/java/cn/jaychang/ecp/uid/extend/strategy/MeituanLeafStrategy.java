@@ -49,11 +49,11 @@ public class MeituanLeafStrategy implements IUidStrategy {
      * 获取uid生成器
      * @方法名称 getUidGenerator
      * @功能描述 <pre>获取uid生成器</pre>
-     * @param prefix 前缀
+     * @param group 组名
      * @return uid生成器
      */
-    public SegmentIDGenImpl getSegmentService(String prefix) {
-        SegmentIDGenImpl segmentService = generatorMap.get(prefix);
+    public SegmentIDGenImpl getSegmentService(String group) {
+        SegmentIDGenImpl segmentService = generatorMap.get(group);
         if (null == segmentService) {
             synchronized (generatorMap) {
                 if (null == segmentService) {
@@ -61,13 +61,14 @@ public class MeituanLeafStrategy implements IUidStrategy {
                     IDAllocService idAllocService = new IDAllocServiceImpl(idAllocDao);
                     segmentService = new SegmentIDGenImpl();
                     segmentService.setIdAllocService(idAllocService);
+                    segmentService.setBizTag(group);
                     if (segmentService.init()) {
                         log.info("Segment Service Init Successfully");
                     } else {
                         throw new RuntimeException("Segment Service Init Fail");
                     }
                 }
-                generatorMap.put(prefix, segmentService);
+                generatorMap.put(group, segmentService);
             }
         }
         return segmentService;

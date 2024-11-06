@@ -61,11 +61,11 @@ public class TwitterSnowflakeStrategy implements IUidStrategy {
      * 获取uid生成器
      * @方法名称 getSnowflakeId
      * @功能描述 <pre>获取uid生成器</pre>
-     * @param prefix 前缀
+     * @param group 组名
      * @return uid生成器
      */
-    public SnowflakeIdWorker getSnowflakeId(String prefix) {
-        SnowflakeIdWorker snowflakeIdWorker = generatorMap.get(prefix);
+    public SnowflakeIdWorker getSnowflakeId(String group) {
+        SnowflakeIdWorker snowflakeIdWorker = generatorMap.get(group);
         if (null == snowflakeIdWorker) {
             synchronized (generatorMap) {
                 if (null == snowflakeIdWorker) {
@@ -83,7 +83,7 @@ public class TwitterSnowflakeStrategy implements IUidStrategy {
                     snowflakeIdWorker = new SnowflakeIdWorker(realWid, realDid);
                     snowflakeIdWorker.setClock(true);
                 }
-                generatorMap.put(prefix, snowflakeIdWorker);
+                generatorMap.put(group, snowflakeIdWorker);
             }
         }
         return snowflakeIdWorker;

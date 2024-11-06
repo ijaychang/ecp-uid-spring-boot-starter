@@ -21,32 +21,27 @@ import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer
  */
 public class ColumnMaxValueIncrementer extends SegmentIDGenImpl implements DataFieldMaxValueIncrementer {
 
-    private String bizTag;
     /**
      * 填充长度
      */
     protected int paddingLength = 8;
-    
-    public ColumnMaxValueIncrementer(String bizTag) {
-        this.bizTag = bizTag;
-    }
-    
+
     @Override
     public int nextIntValue()
         throws DataAccessException {
-        return get(bizTag).intValue();
+        return get().intValue();
     }
     
     @Override
     public long nextLongValue()
         throws DataAccessException {
-        return get(bizTag);
+        return get();
     }
     
     @Override
     public String nextStringValue()
         throws DataAccessException {
-        String s = Long.toString(get(bizTag));
+        String s = Long.toString(get());
         int len = s.length();
         if (len < this.paddingLength) {
             StringBuilder sb = new StringBuilder(this.paddingLength);

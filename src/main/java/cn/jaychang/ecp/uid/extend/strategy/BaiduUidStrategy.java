@@ -42,20 +42,20 @@ public class BaiduUidStrategy implements IUidStrategy {
      * 获取uid生成器
      * @方法名称 getUidGenerator
      * @功能描述 <pre>获取uid生成器</pre>
-     * @param prefix 前缀
+     * @param group 组名
      * @return uid生成器
      */
-    public UidGenerator getUidGenerator(String prefix) {
-        if (StringUtils.isEmpty(prefix)) {
+    public UidGenerator getUidGenerator(String group) {
+        if (StringUtils.isEmpty(group)) {
             return uidGenerator;
         }
-        UidGenerator generator = generatorMap.get(prefix);
+        UidGenerator generator = generatorMap.get(group);
         if (null == generator) {
             synchronized (generatorMap) {
                 if (null == generator) {
                     generator = getGenerator();
                 }
-                generatorMap.put(prefix, generator);
+                generatorMap.put(group, generator);
             }
         }
         return generator;
