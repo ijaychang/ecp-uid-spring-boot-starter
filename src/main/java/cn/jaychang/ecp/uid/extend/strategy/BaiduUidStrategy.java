@@ -30,7 +30,6 @@ public class BaiduUidStrategy implements IUidStrategy {
     
     private static Map<String, UidGenerator> generatorMap = new HashMap<>();
     
-    @Autowired
     private UidGenerator uidGenerator;
 
     @Override

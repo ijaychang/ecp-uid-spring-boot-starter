@@ -97,7 +97,7 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                     if (nodePath.startsWith(ipPort)) {
                         // nodePath 是不完整的路径，所以需要拼接上 uidForeverPath
                         foreverNode = uidForeverPath + ZK_SPLIT + nodePath;
-                        workerId = Long.valueOf(nodePath.substring(nodePath.lastIndexOf("-") + 1));
+                        workerId = Long.valueOf(nodePath.substring(nodePath.lastIndexOf(UNDERLINE) + 1));
                         break;
                     }
                 }
@@ -107,7 +107,7 @@ public class ZkWorkerIdAssigner extends AbstractIntervalWorkId {
                 // 这里创建创建完成返回的nodePath是完整路径
                 String createdNodePath = zkClient.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(workNode, longToBytes(System.currentTimeMillis()));
                 foreverNode = createdNodePath;
-                workerId = Long.valueOf(createdNodePath.substring(createdNodePath.lastIndexOf("-") + 1));
+                workerId = Long.valueOf(createdNodePath.substring(createdNodePath.lastIndexOf(UNDERLINE) + 1));
             }
 
             active.set(true);
