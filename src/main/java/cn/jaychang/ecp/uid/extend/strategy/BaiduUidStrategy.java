@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.jaychang.ecp.uid.extend.annotation.UidModelEnum;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.StringUtils;
 
 import cn.jaychang.ecp.uid.baidu.UidGenerator;
@@ -26,11 +27,13 @@ import cn.jaychang.ecp.uid.baidu.UidGenerator;
  *     ----------------------------------------------
  * </pre>
  */
-public class BaiduUidStrategy implements IUidStrategy {
+public class BaiduUidStrategy implements IUidStrategy, ApplicationContextAware {
     
     private static Map<String, UidGenerator> generatorMap = new HashMap<>();
     
     private UidGenerator uidGenerator;
+
+    private ApplicationContext applicationContext;
 
     @Override
     public UidModelEnum getName() {
@@ -75,9 +78,8 @@ public class BaiduUidStrategy implements IUidStrategy {
      * @功能描述 <pre>多实例返回uidGenerator(返回值不重要，动态注入)</pre>
      * @return
      */
-    @Lookup
     public UidGenerator getGenerator() {
-        return null;
+        return applicationContext.getBean(UidGenerator.class);
     }
 
     public UidGenerator getUidGenerator() {
@@ -86,5 +88,10 @@ public class BaiduUidStrategy implements IUidStrategy {
 
     public void setUidGenerator(UidGenerator uidGenerator) {
         this.uidGenerator = uidGenerator;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
