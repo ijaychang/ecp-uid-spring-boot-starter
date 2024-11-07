@@ -162,7 +162,7 @@ public class RingBuffer {
     public long take() {
         // spin get next available cursor
         long currentCursor = cursor.get();
-        long nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);;
+        long nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);
 
         // check for safety consideration, it never occurs
         Assert.isTrue(nextCursor >= currentCursor, "Curosr can't move back");
@@ -181,7 +181,7 @@ public class RingBuffer {
             while (!running) {
                 running = bufferPaddingExecutor.booleanPaddingBuffer();
             }
-            nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);;
+            nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);
 
             if (nextCursor == currentCursor) {
                 rejectedTakeHandler.rejectTakeBuffer(this);
