@@ -150,18 +150,6 @@ public class RingBuffer {
     }
     
     /**
-     * cursor.updateAndGet(old -> old == tail.get() ? old : old + 1)
-     */
-    public final long updateAndGet() {
-        long prev, next;
-        do {
-            prev = cursor.get();
-            next = prev == tail.get() ? prev : prev + 1;
-        } while (!cursor.compareAndSet(prev, next));
-        return next;
-    }
-    
-    /**
      * Take an UID of the ring at the next cursor, this is a lock free operation by using atomic cursor<p>
      * 
      * Before getting the UID, we also check whether reach the padding threshold, 
@@ -174,7 +162,7 @@ public class RingBuffer {
     public long take() {
         // spin get next available cursor
         long currentCursor = cursor.get();
-        long nextCursor = updateAndGet();
+        long nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);;
 
         // check for safety consideration, it never occurs
         Assert.isTrue(nextCursor >= currentCursor, "Curosr can't move back");
@@ -193,7 +181,7 @@ public class RingBuffer {
             while (!running) {
                 running = bufferPaddingExecutor.booleanPaddingBuffer();
             }
-            nextCursor = updateAndGet();
+            nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);;
 
             if (nextCursor == currentCursor) {
                 rejectedTakeHandler.rejectTakeBuffer(this);
