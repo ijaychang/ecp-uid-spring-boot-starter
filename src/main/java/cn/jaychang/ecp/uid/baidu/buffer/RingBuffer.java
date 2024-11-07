@@ -99,7 +99,7 @@ public class RingBuffer {
         // check buffer size is positive & a power of 2; padding factor in (0, 100)
         Assert.isTrue(bufferSize > 0L, "RingBuffer size must be positive");
         Assert.isTrue(Integer.bitCount(bufferSize) == 1, "RingBuffer size must be a power of 2");
-        Assert.isTrue(paddingFactor > 0 && paddingFactor < 100, "RingBuffer size must be positive");
+        Assert.isTrue(paddingFactor > 0 && paddingFactor < 100, "PaddingFactor must greater than 0 and less than 100");
 
         this.bufferSize = bufferSize;
         this.indexMask = bufferSize - 1;

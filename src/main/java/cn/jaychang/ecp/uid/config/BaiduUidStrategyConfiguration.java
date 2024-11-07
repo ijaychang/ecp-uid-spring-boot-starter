@@ -36,7 +36,11 @@ public class BaiduUidStrategyConfiguration extends WorkerIdConfiguration {
     public UidGenerator uidGenerator(BaiduUidProperties baiduUidProperties) {
         DefaultUidGenerator defaultUidGenerator = null;
         if (UidGeneratorTypeEnum.CACHE.equals(baiduUidProperties.getType())) {
-            defaultUidGenerator = new CachedUidGenerator();
+            CachedUidGenerator cachedUidGenerator = new CachedUidGenerator();
+            cachedUidGenerator.setBoostPower(baiduUidProperties.getBoostPower());
+            cachedUidGenerator.setScheduleInterval(baiduUidProperties.getScheduleInterval());
+            cachedUidGenerator.setPaddingFactor(baiduUidProperties.getPaddingFactor());
+            defaultUidGenerator = cachedUidGenerator;
         } else if (UidGeneratorTypeEnum.DEFAULT.equals(baiduUidProperties.getType())) {
             defaultUidGenerator = new DefaultUidGenerator();
         } else {

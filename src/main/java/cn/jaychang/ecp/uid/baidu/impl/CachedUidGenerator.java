@@ -177,4 +177,8 @@ public class CachedUidGenerator extends DefaultUidGenerator implements Disposabl
         this.scheduleInterval = scheduleInterval;
     }
 
+    public void setPaddingFactor(int paddingFactor) {
+        Assert.isTrue(paddingFactor > 0 && paddingFactor < 100, "PaddingFactor must greater than 0 and less than 100");
+        this.paddingFactor = paddingFactor;
+    }
 }
