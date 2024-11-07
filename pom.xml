@@ -10,6 +10,7 @@
 
 	<name>Ecp Uid Spring Boot Starter</name>
 	<description>Ecp Uid Spring Boot Starter</description>
+	<url>https://github.com/ijaychang/ecp-uid-spring-boot-starter</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
