@@ -13,6 +13,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Objects;
+
 /**
  * baidu uid 生成策略配置类
  *
@@ -38,7 +40,9 @@ public class BaiduUidStrategyConfiguration extends WorkerIdConfiguration {
         if (UidGeneratorTypeEnum.CACHE.equals(baiduUidProperties.getType())) {
             CachedUidGenerator cachedUidGenerator = new CachedUidGenerator();
             cachedUidGenerator.setBoostPower(baiduUidProperties.getBoostPower());
-            cachedUidGenerator.setScheduleInterval(baiduUidProperties.getScheduleInterval());
+            if (Objects.nonNull(baiduUidProperties.getScheduleInterval())) {
+                cachedUidGenerator.setScheduleInterval(baiduUidProperties.getScheduleInterval());
+            }
             cachedUidGenerator.setPaddingFactor(baiduUidProperties.getPaddingFactor());
             defaultUidGenerator = cachedUidGenerator;
         } else if (UidGeneratorTypeEnum.DEFAULT.equals(baiduUidProperties.getType())) {

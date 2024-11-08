@@ -43,14 +43,14 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/jaychang9/ecp-uid-spring-boot-starter</url>
-		<connection>scm:git:git://github.com/jaychang9/ecp-uid-spring-boot-starter.git</connection>
-		<developerConnection>scm:git:git@github.com:jaychang9/ecp-uid-spring-boot-starter.git</developerConnection>
+		<url>https://github.com/ijaychang/ecp-uid-spring-boot-starter</url>
+		<connection>scm:git:git://github.com/ijaychang/ecp-uid-spring-boot-starter.git</connection>
+		<developerConnection>scm:git:git@github.com:ijaychang/ecp-uid-spring-boot-starter.git</developerConnection>
 	</scm>
 
 	<issueManagement>
 		<system>GitHub Issue Management</system>
-		<url>https://github.com/jaychang9/ecp-uid-spring-boot-starter/issues</url>
+		<url>https://github.com/ijaychang/ecp-uid-spring-boot-starter/issues</url>
 	</issueManagement>
 
 	<developers>
