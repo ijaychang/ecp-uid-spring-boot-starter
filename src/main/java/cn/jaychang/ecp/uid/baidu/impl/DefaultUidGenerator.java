@@ -22,12 +22,11 @@ import cn.jaychang.ecp.uid.baidu.BitsAllocator;
 import cn.jaychang.ecp.uid.baidu.UidGenerator;
 import cn.jaychang.ecp.uid.baidu.exception.UidGenerateException;
 import cn.jaychang.ecp.uid.baidu.utils.DateUtils;
+import cn.jaychang.ecp.uid.worker.WorkerIdAssigner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.StringUtils;
-
-import cn.jaychang.ecp.uid.worker.WorkerIdAssigner;
 
 /**
  * Represents an implementation of {@link UidGenerator}
@@ -149,7 +148,7 @@ public class DefaultUidGenerator implements UidGenerator, InitializingBean {
                 currentSecond = getNextSecond(lastSecond);
             }
 
-        // At the different second, sequence restart from zero
+            // At the different second, sequence restart from zero
         } else {
             sequence = 0L;
         }
@@ -210,7 +209,7 @@ public class DefaultUidGenerator implements UidGenerator, InitializingBean {
     }
 
     public void setEpochStr(String epochStr) {
-        if (!StringUtils.isEmpty(epochStr)) {
+        if (StringUtils.hasText(epochStr)) {
             this.epochStr = epochStr;
             this.epochSeconds = TimeUnit.MILLISECONDS.toSeconds(DateUtils.parseByDayPattern(epochStr).getTime());
         }

@@ -25,15 +25,15 @@ import cn.jaychang.ecp.uid.baidu.utils.PaddedAtomicLong;
 
 /**
  * Represents a ring buffer based on array.<br>
- * Using array could improve read element performance due to the CUP cache line. To prevent 
+ * Using array could improve read element performance due to the CUP cache line. To prevent
  * the side effect of False Sharing, {@link PaddedAtomicLong} is using on 'tail' and 'cursor'<p>
- * 
+ *
  * A ring buffer is consisted of:
  * <li><b>slots:</b> each element of the array is a slot, which is be set with a UID
  * <li><b>flags:</b> flag array corresponding the same index with the slots, indicates whether can take or put slot
- * <li><b>tail:</b> a sequence of the max slot position to produce 
+ * <li><b>tail:</b> a sequence of the max slot position to produce
  * <li><b>cursor:</b> a sequence of the min slot position to consume
- * 
+ *
  * @author yutianbao
  */
 public class RingBuffer {
@@ -58,41 +58,30 @@ public class RingBuffer {
     private final AtomicLong cursor = new PaddedAtomicLong(START_POINT);
 
     /** Threshold for trigger padding buffer*/
-    private final int paddingThreshold; 
-    
+    private final int paddingThreshold;
+
     /** Reject put/take buffer handle policy */
-    private RejectedPutBufferHandler rejectedPutHandler = new RejectedPutBufferHandler() {
-        @Override
-        public void rejectPutBuffer(RingBuffer ringBuffer, long uid) {
-            discardPutBuffer(ringBuffer, uid);
-        }
-    };
-    
-    private RejectedTakeBufferHandler rejectedTakeHandler = new RejectedTakeBufferHandler() {
-        @Override
-        public void rejectTakeBuffer(RingBuffer ringBuffer) {
-            exceptionRejectedTakeBuffer(ringBuffer);
-        }
-    }; 
-    
+    private RejectedPutBufferHandler rejectedPutHandler = this::discardPutBuffer;
+    private RejectedTakeBufferHandler rejectedTakeHandler = this::exceptionRejectedTakeBuffer;
+
     /** Executor of padding buffer */
     private BufferPaddingExecutor bufferPaddingExecutor;
 
     /**
      * Constructor with buffer size, paddingFactor default as {@value #DEFAULT_PADDING_PERCENT}
-     * 
+     *
      * @param bufferSize must be positive & a power of 2
      */
     public RingBuffer(int bufferSize) {
         this(bufferSize, DEFAULT_PADDING_PERCENT);
     }
-    
+
     /**
      * Constructor with buffer size & padding factor
-     * 
+     *
      * @param bufferSize must be positive & a power of 2
      * @param paddingFactor percent in (0 - 100). When the count of rest available UIDs reach the threshold, it will trigger padding buffer<br>
-     *        Sample: paddingFactor=20, bufferSize=1000 -> threshold=1000 * 20 /100,  
+     *        Sample: paddingFactor=20, bufferSize=1000 -> threshold=1000 * 20 /100,
      *        padding buffer will be triggered when tail-cursor<threshold
      */
     public RingBuffer(int bufferSize, int paddingFactor) {
@@ -105,14 +94,14 @@ public class RingBuffer {
         this.indexMask = bufferSize - 1;
         this.slots = new long[bufferSize];
         this.flags = initFlags(bufferSize);
-        
+
         this.paddingThreshold = bufferSize * paddingFactor / 100;
     }
 
     /**
      * Put an UID in the ring & tail moved<br>
      * We use 'synchronized' to guarantee the UID fill in slot & publish new tail sequence as atomic operations<br>
-     * 
+     *
      * <b>Note that: </b> It is recommended to put UID in a serialize way, cause we once batch generate a series UIDs and put
      * the one by one into the buffer, so it is unnecessary put in multi-threads
      *
@@ -148,14 +137,14 @@ public class RingBuffer {
         // the take operation can't consume the UID we just put, until the tail is published(tail.incrementAndGet())
         return true;
     }
-    
+
     /**
      * Take an UID of the ring at the next cursor, this is a lock free operation by using atomic cursor<p>
-     * 
-     * Before getting the UID, we also check whether reach the padding threshold, 
+     *
+     * Before getting the UID, we also check whether reach the padding threshold,
      * the padding buffer operation will be triggered in another thread<br>
      * If there is no more available UID to be taken, the specified {@link RejectedTakeBufferHandler} will be applied<br>
-     * 
+     *
      * @return UID
      * @throws IllegalStateException if the cursor moved back
      */
@@ -177,15 +166,7 @@ public class RingBuffer {
 
         // cursor catch the tail, means that there is no more available UID to take
         if (nextCursor == currentCursor) {
-            Boolean running = false;
-            while (!running) {
-                running = bufferPaddingExecutor.booleanPaddingBuffer();
-            }
-            nextCursor = cursor.updateAndGet(old -> old == tail.get() ? old : old + 1);
-
-            if (nextCursor == currentCursor) {
-                rejectedTakeHandler.rejectTakeBuffer(this);
-            }
+            rejectedTakeHandler.rejectTakeBuffer(this);
         }
 
         // 1. check next slot flag is CAN_TAKE_FLAG
@@ -203,7 +184,7 @@ public class RingBuffer {
     }
 
     /**
-     * Calculate slot index with the slot sequence (sequence % bufferSize) 
+     * Calculate slot index with the slot sequence (sequence % bufferSize)
      */
     protected int calSlotIndex(long sequence) {
         return (int) (sequence & indexMask);
@@ -215,15 +196,15 @@ public class RingBuffer {
     protected void discardPutBuffer(RingBuffer ringBuffer, long uid) {
         LOGGER.warn("Rejected putting buffer for uid:{}. {}", uid, ringBuffer);
     }
-    
+
     /**
-     * Policy for {@link RejectedTakeBufferHandler}, throws {@link RuntimeException} after logging 
+     * Policy for {@link RejectedTakeBufferHandler}, throws {@link RuntimeException} after logging
      */
     protected void exceptionRejectedTakeBuffer(RingBuffer ringBuffer) {
         LOGGER.warn("Rejected take buffer. {}", ringBuffer);
         throw new RuntimeException("Rejected take buffer. " + ringBuffer);
     }
-    
+
     /**
      * Initialize flags as CAN_PUT_FLAG
      */
@@ -232,7 +213,7 @@ public class RingBuffer {
         for (int i = 0; i < bufferSize; i++) {
             flags[i] = new PaddedAtomicLong(CAN_PUT_FLAG);
         }
-        
+
         return flags;
     }
 
@@ -270,10 +251,10 @@ public class RingBuffer {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("RingBuffer [bufferSize=").append(bufferSize)
-               .append(", tail=").append(tail)
-               .append(", cursor=").append(cursor)
-               .append(", paddingThreshold=").append(paddingThreshold).append("]");
-        
+                .append(", tail=").append(tail)
+                .append(", cursor=").append(cursor)
+                .append(", paddingThreshold=").append(paddingThreshold).append("]");
+
         return builder.toString();
     }
 
