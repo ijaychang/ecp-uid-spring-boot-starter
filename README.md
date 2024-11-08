@@ -101,7 +101,7 @@ pom引入ecp-uid-spring-boot-starter
 <dependency>
     <groupId>cn.jaychang</groupId>
     <artifactId>ecp-uid-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -109,9 +109,9 @@ pom引入ecp-uid-spring-boot-starter
 pom还需要引入 zkclient
 ```xml
 <dependency>
-    <groupId>com.101tec</groupId>
-    <artifactId>zkclient</artifactId>
-    <version>0.11</version>
+    <groupId>org.apache.curator</groupId>
+    <artifactId>curator-framework</artifactId>
+    <version>4.3.0</version>
 </dependency>
 ```
 application.yml
