@@ -18,6 +18,8 @@ package cn.jaychang.ecp.uid.baidu.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.jaychang.ecp.uid.baidu.BitsAllocator;
+import cn.jaychang.ecp.uid.baidu.UidGenerator;
 import cn.jaychang.ecp.uid.baidu.buffer.BufferPaddingExecutor;
 import cn.jaychang.ecp.uid.baidu.buffer.RejectedPutBufferHandler;
 import cn.jaychang.ecp.uid.baidu.buffer.RejectedTakeBufferHandler;
